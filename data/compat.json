@@ -38,5 +38,19 @@
   "panel": false,
   "version": "0.0.24",
   "tested": "2026-11-15"
+ },
+ "skill-homeassistant": {
+  "status": "broken",
+  "reason": "does not install: ERROR: nested-lookup<1.0,>=0.2 has no pure-Python wheel (only source or compiled builds), so it cannot be installed in the browser; the settings panel only installs packages named ovos-*",
+  "panel": false,
+  "version": "1.4.6",
+  "tested": "2026-11-15"
+ },
+ "neon-skill-alerts": {
+  "status": "broken",
+  "reason": "does not install: ERROR: No matching distribution found for ovos-bus-client>=0.0.3,~=0.0; the settings panel only installs packages named ovos-*",
+  "panel": false,
+  "version": "3.1.0",
+  "tested": "2026-11-15"
  }
 }
