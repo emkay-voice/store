@@ -102,6 +102,8 @@ def texts_for(skill: dict, names: dict, descriptions: dict) -> dict:
                          "examples": (t.get("examples") or [])[:6]}
             if norm(out[lang]["name"]) == norm(skill.get("package_name")):
                 out[lang]["name"] = out["en-us"]["name"]
+            if norm(out[lang]["description"]) == norm(skill.get("package_name")):
+                out[lang]["description"] = out["en-us"]["description"]
     return out
 
 
