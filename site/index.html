@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#05070a">
+  <meta name="description" content="Skills for OpenVoiceOS that you can add to Emkay, the voice assistant in your browser.">
+  <title>Emkay skills</title>
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="store.css">
+</head>
+<body>
+  <!-- Emkay's skill store: what klondike-mercantile finds, what Emkay ships
+       and what has been tried in it (tools/build.py writes data/skills.json) -->
+  <header class="top">
+    <a class="brand" href="./">
+      <svg class="eyes" viewBox="0 0 512 300" aria-hidden="true"><g fill="none" stroke-width="30" stroke-linecap="round"><circle cx="166" cy="150" r="56" stroke="#555"/><path d="M110 150a56 56 0 0 1 112 0" stroke="#fff"/><circle cx="346" cy="150" r="56" stroke="#555"/><path d="M290 150a56 56 0 0 1 112 0" stroke="#fff"/></g></svg>
+      <span data-t="title">Emkay skills</span>
+    </a>
+    <label class="lang"><span class="sr" data-t="lang.label">Language</span>
+      <select id="lang"></select></label>
+    <a class="open-emkay" href="https://app.emkay.ai/" data-t="open_emkay">Open Emkay</a>
+  </header>
+
+  <main>
+    <p class="tagline" data-t="tagline"></p>
+    <div class="search">
+      <input id="q" type="search" autocomplete="off" data-t-placeholder="search">
+    </div>
+    <nav id="cats" class="cats" aria-label="Categories"></nav>
+    <div class="filters">
+      <label><input type="checkbox" id="mylang"> <span data-t="my_lang_only"></span></label>
+      <span id="count" class="count"></span>
+    </div>
+    <!-- the front page (no search, no category): featured skills, then one
+         shelf per category; otherwise the matching skills as a grid -->
+    <section id="front" aria-live="polite"></section>
+    <section id="grid" class="grid" aria-live="polite"></section>
+  </main>
+
+  <footer class="foot">
+    <p><span data-t="footer"></span>
+      <a href="https://andlo.github.io/ovos-klondike-mercantile/">Klondike Mercantile</a> ·
+      <a href="https://github.com/emkay-voice/store">GitHub</a> · <span id="built"></span></p>
+  </footer>
+
+  <!-- one skill, in full -->
+  <dialog id="detail" class="detail">
+    <form method="dialog"><button class="x" aria-label="Close" data-t-aria="close">×</button></form>
+    <div id="detail-body"></div>
+  </dialog>
+
+  <script type="module" src="store.js"></script>
+</body>
+</html>

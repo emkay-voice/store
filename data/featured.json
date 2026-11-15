@@ -1,0 +1,11 @@
+{
+ "_doc": "The store's front page: the skills in the hero row, in order, each with its colours (a CSS gradient). Only shown when the skill is in the store.",
+ "featured": [
+  {"package": "ovos-skill-horoscope-readings", "colors": ["#3a1c71", "#d76d77"]},
+  {"package": "skill-homeassistant", "colors": ["#0b486b", "#1e9bff"]},
+  {"package": "ovos-skill-wikipedia", "colors": ["#232526", "#5b6b7c"]},
+  {"package": "ovos-skill-geography", "colors": ["#134e5e", "#71b280"]},
+  {"package": "ovos-skill-weather", "colors": ["#1e3c72", "#2a5298"]},
+  {"package": "ovos-skill-ovosblog", "colors": ["#42275a", "#734b6d"]}
+ ]
+}

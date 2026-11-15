@@ -1,0 +1,8 @@
+{
+ "_doc": "What has been tried in Emkay (OVOS in the browser). status: works | broken; reason: why it does not work (shown in the store). Only what was actually tried goes here. Skills Emkay ships come from app.emkay.ai/build.json and need no entry. To be written by the test job of emkay-voice/emkay#21; until then by hand, from the tests in emkay-voice/emkay's tools/probes.",
+ "ovos-skill-number-facts": {"status": "works", "reason": ""},
+ "ovos-skill-convert": {"status": "works", "reason": ""},
+ "ovos-skill-boot-finished": {"status": "broken", "reason": "waits for an audio service and a listener that a browser does not have"},
+ "ovos-skill-andersen-tales": {"status": "broken", "reason": "its source site does not allow a browser to read it (CORS)"},
+ "ovos-skill-grimm-tales": {"status": "broken", "reason": "its source site does not allow a browser to read it (CORS)"}
+}

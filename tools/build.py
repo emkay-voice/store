@@ -1,0 +1,200 @@
+"""Build the Emkay skill store (store.emkay.ai) into site/.
+
+Where the skills come from:
+  * ovos-klondike-mercantile's skills.json: every OVOS skill, plugin and tool
+    found on GitHub, cross-referenced with PyPI, the OVOS store and
+    ovos-localize, with names, descriptions and example phrases in many
+    languages. The store keeps the skills that can be installed (on PyPI).
+  * Emkay's own build.json (app.emkay.ai): the skills that come with Emkay.
+  * data/compat.json: what has been tried in Emkay - works, or does not and
+    why. Later written by a test job (emkay-voice/emkay#21), for now by hand.
+    What does not work is left out of the store.
+
+Only skills klondike calls "Looks Complete" (tier 1) are taken.
+  * data/categories.json: the store's categories, the words that place a
+    skill in one, and per-package overrides.
+
+What it writes:
+  site/data/skills.json   one slim record per skill, texts per language
+  site/texts.json         the store's own texts, from locale/<lang>/*.dialog
+  site/build.json         when and from what the store was built
+
+Usage:
+  python3 tools/build.py [--klondike FILE_OR_URL] [--emkay FILE_OR_URL]
+"""
+import argparse
+import json
+import re
+import sys
+import time
+import urllib.request
+from pathlib import Path
+
+REPO = Path(__file__).resolve().parent.parent
+SITE = REPO / "site"
+
+KLONDIKE = "https://andlo.github.io/ovos-klondike-mercantile/skills.json"
+EMKAY = "https://app.emkay.ai/build.json"
+
+#: The languages Emkay supports (80 % or more on ovos-localize), as Emkay's
+#: locale folders name them. The store speaks these.
+LANGS = ["en-us", "da-dk", "de-de", "fr-fr", "it-it", "es-es", "gl-es", "ca-es",
+         "eu-es", "pt-pt", "pt-br", "nl-nl"]
+
+
+def load(source: str):
+    """JSON from a file or a URL."""
+    if source.startswith(("http://", "https://")):
+        req = urllib.request.Request(source, headers={"User-Agent": "emkay-store-build"})
+        with urllib.request.urlopen(req, timeout=60) as r:  # noqa: S310 - https only
+            return json.load(r)
+    return json.loads(Path(source).read_text())
+
+
+def norm(name: str) -> str:
+    """A package name as pip compares them (PEP 503)."""
+    return re.sub(r"[-_.]+", "-", name or "").lower()
+
+
+def categorize(skill: dict, rules: dict) -> str:
+    """The store category: an override, else the first rule whose words occur
+    in the name, package, description or tags, else klondike's own category
+    when it is one of ours, else "other"."""
+    pkg = norm(skill.get("package_name"))
+    if pkg in rules["overrides"]:
+        return rules["overrides"][pkg]
+    text = " ".join([skill.get("name") or "", skill.get("package_name") or "",
+                     skill.get("description") or "", " ".join(skill.get("tags") or [])]).lower()
+    for cat in rules["order"]:
+        if any(re.search(rf"\b{re.escape(w)}", text) for w in rules["words"][cat]):
+            return cat
+    kc = (skill.get("category") or "").lower()
+    return rules["klondike"].get(kc, "other")
+
+
+def display_name(skill: dict, names: dict) -> str:
+    """A name for people: the manifest's, unless it is just the package name;
+    then data/categories.json "names", else the package name made readable
+    ("ovos-skill-date-time" -> "Date Time")."""
+    pkg = skill.get("package_name") or ""
+    name = skill.get("name") or ""
+    if name and norm(name) != norm(pkg):
+        return name
+    if norm(pkg) in names:
+        return names[norm(pkg)]
+    core = re.sub(r"^(ovos-skill-|neon-skill-|skill-ovos-|skill-)|(-skill)$", "", norm(pkg))
+    return " ".join(w.upper() if len(w) <= 2 else w.capitalize() for w in core.replace("_", "-").split("-"))
+
+
+def texts_for(skill: dict, names: dict, descriptions: dict) -> dict:
+    """Name, description and examples per language; English from the main
+    record, the others from klondike's locale_content where there is one."""
+    out = {"en-us": {"name": display_name(skill, names),
+                     "description": descriptions.get(norm(skill.get("package_name")))
+                     or (skill.get("description") if norm(skill.get("description")) != norm(skill.get("package_name")) else "")
+                     or "",
+                     "examples": (skill.get("examples") or [])[:6]}}
+    for lang, t in (skill.get("locale_content") or {}).items():
+        lang = lang.lower()
+        if lang in LANGS and lang != "en-us":
+            out[lang] = {"name": t.get("name") or out["en-us"]["name"],
+                         "description": t.get("description") or "",
+                         "examples": (t.get("examples") or [])[:6]}
+            if norm(out[lang]["name"]) == norm(skill.get("package_name")):
+                out[lang]["name"] = out["en-us"]["name"]
+    return out
+
+
+def locale_texts() -> dict:
+    """The store's own texts: locale/<lang>/<key>.dialog, one text per file,
+    as in an OVOS skill (and as Emkay's app does)."""
+    out = {}
+    for d in sorted((REPO / "locale").iterdir()):
+        if d.is_dir():
+            out[d.name] = {f.stem: f.read_text().strip() for f in sorted(d.glob("*.dialog"))}
+    return out
+
+
+def main():
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--klondike", default=KLONDIKE)
+    ap.add_argument("--emkay", default=EMKAY)
+    args = ap.parse_args()
+
+    found = load(args.klondike)
+    try:
+        emkay = load(args.emkay)
+    except Exception as e:  # the store still builds, without "built in"
+        print(f"no Emkay build.json ({e}); no skill is marked built in", file=sys.stderr)
+        emkay = {}
+    builtin = {norm(v.split("==")[0]) for v in emkay.get("versions", [])}
+    compat = {norm(k): v for k, v in json.loads((REPO / "data/compat.json").read_text()).items()
+              if not k.startswith("_")}
+    rules = json.loads((REPO / "data/categories.json").read_text())
+    rules["overrides"] = {norm(k): v for k, v in rules.get("overrides", {}).items()}
+    names = {norm(k): v for k, v in rules.get("names", {}).items()}
+    descriptions = {norm(k): v for k, v in rules.get("descriptions", {}).items()}
+    featured = json.loads((REPO / "data/featured.json").read_text())["featured"]
+
+    skills, seen, hidden = [], set(), []
+    for s in found:
+        pkg = s.get("package_name")
+        # only what klondike calls "Looks Complete" (tier 1: a manifest, on
+        # PyPI, a release or in OVOS' own store), not archived
+        if s.get("type_group") != "Skill" or s.get("tier") != 1 or not s.get("on_pypi") \
+                or not pkg or s.get("archived"):
+            continue
+        key = norm(pkg)
+        if key in seen:      # the same package from a fork: keep the first (klondike ranks them)
+            continue
+        seen.add(key)
+        c = compat.get(key, {})
+        # broken wins: Emkay's bundle also holds a skill it switches off
+        # (ovos-skill-boot-finished)
+        status = c.get("status") if c.get("status") == "broken" else \
+            "builtin" if key in builtin else c.get("status", "untested")
+        if status == "broken":   # tried and does not work here: not offered at all
+            hidden.append(pkg)
+            continue
+        skills.append({
+            "package": pkg,
+            "id": s.get("id"),
+            "category": categorize(s, rules),
+            "status": status,
+            "reason": c.get("reason", ""),
+            "texts": texts_for(s, names, descriptions),
+            "languages": sorted({l.lower() for l in s.get("languages") or []}),
+            "icon": s.get("icon") if (s.get("icon") or "").startswith("https://") else None,
+            "author": s.get("author"),
+            "source": s.get("source"),
+            "version": s.get("pypi_version"),
+            "license": s.get("license"),
+            "api_key": bool(s.get("requires_api_key")),
+            "official": bool(s.get("in_ovos_store")),
+            "stars": s.get("stars") or 0,
+            "updated": (s.get("last_updated") or "")[:10],
+        })
+    rank = {"builtin": 0, "works": 1, "untested": 2, "broken": 3}
+    skills.sort(key=lambda x: (rank.get(x["status"], 2), -x["stars"], x["package"]))
+
+    (SITE / "data").mkdir(parents=True, exist_ok=True)
+    (SITE / "data/skills.json").write_text(json.dumps(skills, ensure_ascii=False, separators=(",", ":")))
+    (SITE / "texts.json").write_text(json.dumps(locale_texts(), ensure_ascii=False))
+    (SITE / "build.json").write_text(json.dumps({
+        "built": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+        "skills": len(skills),
+        "categories": rules["order"] + ["other"],
+        "langs": LANGS,
+        "featured": [f for f in featured if any(norm(x["package"]) == norm(f["package"]) for x in skills)],
+        "emkay": {k: emkay.get(k) for k in ("version", "build", "commit")},
+    }, indent=1))
+    by = {}
+    for s in skills:
+        by[s["category"]] = by.get(s["category"], 0) + 1
+    print(f"{len(skills)} skills: " + ", ".join(f"{k} {v}" for k, v in sorted(by.items()))
+          + f"; built in {sum(s['status'] == 'builtin' for s in skills)}"
+          + f"; left out (does not work in a browser): {', '.join(hidden) or 'none'}")
+
+
+if __name__ == "__main__":
+    main()

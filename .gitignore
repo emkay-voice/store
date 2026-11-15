@@ -1,0 +1,4 @@
+site/data/
+site/texts.json
+site/build.json
+__pycache__/
