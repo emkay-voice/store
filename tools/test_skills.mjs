@@ -84,6 +84,11 @@ json.dumps(len(hits))`;
 
 /** Lines that say why a skill did not install or load. */
 function why(lines, fallback) {
+  // ovos-core's ovos.pip.install.failed message: pip's own output is in data.detail
+  lines = lines.flatMap((l) => {
+    try { const m = JSON.parse(l); return [m.data?.error, ...String(m.data?.detail ?? "").split("\n")]; }
+    catch { return [l]; }
+  }).filter(Boolean).filter((l) => !/^Using \d+ constraints/.test(l));
   const flat = lines.flatMap((l) => String(l).split("\n"))
     // OVOS' log prefix: "2026-11-15 21:58:29.974 - emkay - module:func:210 - ERROR - "
     .map((l) => l.replace(/^\S+ \S+ - \S+ - \S+ - [A-Z]+ - /, "").trim());

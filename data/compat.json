@@ -32,25 +32,11 @@
   "version": "0.2.11",
   "tested": "2026-11-15"
  },
- "skill-homeassistant": {
-  "status": "broken",
-  "reason": "does not install: {\"type\": \"ovos.pip.install.failed\", \"data\": {\"error\": \"error in pip subprocess\", \"detail\": \"Using 176 constraints from https://raw.githubusercontent.com/OpenVoiceOS/ovos-releases/refs/heads/main/const; the settings panel only installs packages named ovos-*",
-  "panel": false,
-  "version": "1.4.6",
-  "tested": "2026-11-15"
- },
  "neon-homeassistant-skill": {
   "status": "works",
   "reason": "the settings panel only installs packages named ovos-*",
   "panel": false,
   "version": "0.0.24",
-  "tested": "2026-11-15"
- },
- "neon-skill-alerts": {
-  "status": "broken",
-  "reason": "does not install: {\"type\": \"ovos.pip.install.failed\", \"data\": {\"error\": \"error in pip subprocess\", \"detail\": \"Using 176 constraints from https://raw.githubusercontent.com/OpenVoiceOS/ovos-releases/refs/heads/main/const; the settings panel only installs packages named ovos-*",
-  "panel": false,
-  "version": "3.1.0",
   "tested": "2026-11-15"
  }
 }
