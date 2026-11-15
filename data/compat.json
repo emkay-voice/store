@@ -25,5 +25,23 @@
   "reason": "",
   "version": "1.1.0",
   "tested": "2026-11-15"
+ },
+ "skill-homeassistant": {
+  "status": "broken",
+  "reason": "does not install: {\"detail\":\"the package name must be a plain OVOS package name, with no version, extras, path or URL\"}",
+  "version": "1.4.6",
+  "tested": "2026-11-15"
+ },
+ "neon-homeassistant-skill": {
+  "status": "broken",
+  "reason": "does not install: {\"detail\":\"the package name must be a plain OVOS package name, with no version, extras, path or URL\"}",
+  "version": "0.0.24",
+  "tested": "2026-11-15"
+ },
+ "ovos-skill-cmd": {
+  "status": "broken",
+  "reason": "installs, but does not load: Failed to load plugin entry point EntryPoint(name='ovos-skill-cmd.openvoiceos', value='ovos_skill_cmd:CmdSkill', group='opm.skill'): No module named 'pwd'",
+  "version": "0.2.11",
+  "tested": "2026-11-15"
  }
 }
