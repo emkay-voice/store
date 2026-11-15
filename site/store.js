@@ -1,8 +1,9 @@
 // Emkay's skill store: browse, search and filter the skills in data/skills.json
 // (tools/build.py), in the visitor's language, and hand one to Emkay to install.
 //
-// The front page is a shop window: featured skills (data/featured.json) as
-// big cards, then one shelf per category. A search or a category turns it
+// The front page is a shop window: featured skills as big cards (new and
+// updated ones, then the skill of the week; tools/build.py picks them, only
+// among skills that work in Emkay), then one shelf per category. A search or a category turns it
 // into a grid of the skills that match.
 //
 // Install: the store is another site than Emkay (store.emkay.ai, app.emkay.ai),
@@ -149,7 +150,7 @@ function hero(f) {
   const say = (tx.examples || [])[0];
   return `<article class="hero" data-p="${esc(s.package)}" tabindex="0"
       style="background:linear-gradient(135deg, ${esc(f.colors[0])}, ${esc(f.colors[1])})">
-    <div class="kicker">${esc(t(`category.${s.category}`))}</div>
+    <div class="kicker">${esc(f.kind === "pinned" ? t(`category.${s.category}`) : t(`featured.${f.kind}`))}</div>
     <h2>${esc(tx.name)}</h2>
     <p>${esc(tx.description)}</p>
     ${say ? `<div class="say">“${esc(say)}”</div>` : ""}

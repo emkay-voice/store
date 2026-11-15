@@ -13,6 +13,7 @@ Where the skills come from:
 Only skills klondike calls "Looks Complete" (tier 1) are taken.
   * data/categories.json: the store's categories, the words that place a
     skill in one, and per-package overrides.
+  * data/featured.json: how the "Featured" row is picked (pick_featured).
 
 What it writes:
   site/data/skills.json   one slim record per skill, texts per language
@@ -107,6 +108,31 @@ def texts_for(skill: dict, names: dict, descriptions: dict) -> dict:
     return out
 
 
+def pick_featured(skills: list, rules: dict, today=None) -> list:
+    """The "Featured" row: only skills that work in Emkay. New and recently
+    updated ones first (newest first, at most max_fresh), then pinned ones,
+    last the skill of the week: one of the other working skills, changing
+    with the ISO week, the same for everyone all week."""
+    import datetime as dt
+    today = today or dt.date.today()
+    working = [s for s in skills if s["status"] in ("builtin", "works")]
+    fresh = sorted((s for s in working if s["new"] or s["fresh"]),
+                   key=lambda s: s["updated"], reverse=True)[: rules.get("max_fresh", 5)]
+    out = [{"package": s["package"], "kind": "new" if s["new"] else "updated"} for s in fresh]
+    for p in rules.get("pinned", []):
+        if any(norm(s["package"]) == norm(p) for s in working) and p not in {o["package"] for o in out}:
+            out.append({"package": p, "kind": "pinned"})
+    pool = sorted(s["package"] for s in working if s["package"] not in {o["package"] for o in out})
+    if pool:
+        year, week, _ = today.isocalendar()
+        out.append({"package": pool[(year * 53 + week) % len(pool)], "kind": "week"})
+    colors = rules.get("colors", {})
+    cat = {s["package"]: s["category"] for s in skills}
+    for o in out:
+        o["colors"] = colors.get(cat[o["package"]], colors.get("other", ["#283048", "#859398"]))
+    return out
+
+
 def locale_texts() -> dict:
     """The store's own texts: locale/<lang>/<key>.dialog, one text per file,
     as in an OVOS skill (and as Emkay's app does)."""
@@ -136,7 +162,7 @@ def main():
     rules["overrides"] = {norm(k): v for k, v in rules.get("overrides", {}).items()}
     names = {norm(k): v for k, v in rules.get("names", {}).items()}
     descriptions = {norm(k): v for k, v in rules.get("descriptions", {}).items()}
-    featured = json.loads((REPO / "data/featured.json").read_text())["featured"]
+    feat_rules = json.loads((REPO / "data/featured.json").read_text())
 
     skills, seen, hidden = [], set(), []
     for s in found:
@@ -175,6 +201,8 @@ def main():
             "official": bool(s.get("in_ovos_store")),
             "stars": s.get("stars") or 0,
             "updated": (s.get("last_updated") or "")[:10],
+            "new": bool(s.get("is_new_repo")),
+            "fresh": bool(s.get("is_recently_updated")),
         })
     rank = {"builtin": 0, "works": 1, "untested": 2, "broken": 3}
     skills.sort(key=lambda x: (rank.get(x["status"], 2), -x["stars"], x["package"]))
@@ -187,7 +215,7 @@ def main():
         "skills": len(skills),
         "categories": rules["order"] + ["other"],
         "langs": LANGS,
-        "featured": [f for f in featured if any(norm(x["package"]) == norm(f["package"]) for x in skills)],
+        "featured": pick_featured(skills, feat_rules),
         "emkay": {k: emkay.get(k) for k in ("version", "build", "commit")},
     }, indent=1))
     by = {}

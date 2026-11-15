@@ -12,6 +12,9 @@ from pathlib import Path
 REPO = Path(__file__).resolve().parent.parent
 
 T = {
+ "featured.new": {"en-us": "New", "da-dk": "Ny", "de-de": "Neu", "fr-fr": "Nouveau", "it-it": "Novità", "es-es": "Nueva", "gl-es": "Nova", "ca-es": "Nova", "eu-es": "Berria", "pt-pt": "Nova", "pt-br": "Nova", "nl-nl": "Nieuw"},
+ "featured.updated": {"en-us": "Just updated", "da-dk": "Lige opdateret", "de-de": "Gerade aktualisiert", "fr-fr": "Mis à jour", "it-it": "Appena aggiornata", "es-es": "Recién actualizada", "gl-es": "Recén actualizada", "ca-es": "Acabada d'actualitzar", "eu-es": "Eguneratu berria", "pt-pt": "Acabada de atualizar", "pt-br": "Recém-atualizada", "nl-nl": "Net bijgewerkt"},
+ "featured.week": {"en-us": "Skill of the week", "da-dk": "Ugens skill", "de-de": "Skill der Woche", "fr-fr": "Skill de la semaine", "it-it": "Skill della settimana", "es-es": "Skill de la semana", "gl-es": "Skill da semana", "ca-es": "Skill de la setmana", "eu-es": "Asteko skill-a", "pt-pt": "Skill da semana", "pt-br": "Skill da semana", "nl-nl": "Skill van de week"},
  "featured": {"en-us": "Featured", "da-dk": "Udvalgte", "de-de": "Empfohlen", "fr-fr": "À la une", "it-it": "In evidenza", "es-es": "Destacadas", "gl-es": "Destacadas", "ca-es": "Destacades", "eu-es": "Nabarmenduak", "pt-pt": "Em destaque", "pt-br": "Em destaque", "nl-nl": "Uitgelicht"},
  "see_all": {"en-us": "See all", "da-dk": "Se alle", "de-de": "Alle ansehen", "fr-fr": "Tout voir", "it-it": "Vedi tutte", "es-es": "Ver todas", "gl-es": "Ver todas", "ca-es": "Mostra-les totes", "eu-es": "Ikusi guztiak", "pt-pt": "Ver todas", "pt-br": "Ver todas", "nl-nl": "Alles bekijken"},
  "get": {"en-us": "Get", "da-dk": "Hent", "de-de": "Laden", "fr-fr": "Obtenir", "it-it": "Ottieni", "es-es": "Obtener", "gl-es": "Obter", "ca-es": "Obtén", "eu-es": "Lortu", "pt-pt": "Obter", "pt-br": "Obter", "nl-nl": "Ophalen"},

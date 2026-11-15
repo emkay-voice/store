@@ -31,7 +31,7 @@ cd site && python3 -m http.server 8090
 
 - [`data/categories.json`](data/categories.json): the store's categories, the
   words that place a skill in one, overrides, readable names and descriptions
-- [`data/featured.json`](data/featured.json): the front page's featured skills
+- [`data/featured.json`](data/featured.json): how the front page's *Featured* row is picked: only skills that work in Emkay; new and recently updated ones first, then the skill of the week (changes every ISO week)
 - [`data/compat.json`](data/compat.json): what has been tried in Emkay
 - `tools/make_locale.py` seeded `locale/`; it only adds missing files
 - `tools/shot.mjs URL OUT.png 390x844`: a screenshot in headless Chromium

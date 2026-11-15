@@ -1,11 +1,16 @@
 {
- "_doc": "The store's front page: the skills in the hero row, in order, each with its colours (a CSS gradient). Only shown when the skill is in the store.",
- "featured": [
-  {"package": "ovos-skill-horoscope-readings", "colors": ["#3a1c71", "#d76d77"]},
-  {"package": "skill-homeassistant", "colors": ["#0b486b", "#1e9bff"]},
-  {"package": "ovos-skill-wikipedia", "colors": ["#232526", "#5b6b7c"]},
-  {"package": "ovos-skill-geography", "colors": ["#134e5e", "#71b280"]},
-  {"package": "ovos-skill-weather", "colors": ["#1e3c72", "#2a5298"]},
-  {"package": "ovos-skill-ovosblog", "colors": ["#42275a", "#734b6d"]}
- ]
+ "_doc": "The front page's 'Featured' row (tools/build.py picks it on every build): only skills that work in Emkay (included, or tried and working). First the new and recently updated ones (klondike-mercantile's is_new_repo / is_recently_updated), newest first, at most 'max_fresh'; then 'pinned' ones, if any; last the skill of the week, which changes every ISO week among the other working skills. 'colors' are each category's card gradient.",
+ "max_fresh": 5,
+ "pinned": [],
+ "colors": {
+  "reading": ["#3a1c71", "#d76d77"],
+  "music": ["#8e0e00", "#e2466f"],
+  "home": ["#0b486b", "#1e9bff"],
+  "learning": ["#b24592", "#f15f79"],
+  "productivity": ["#11998e", "#38ef7d"],
+  "information": ["#1e3c72", "#2a5298"],
+  "fun": ["#e65c00", "#f9d423"],
+  "tools": ["#232526", "#5b6b7c"],
+  "other": ["#283048", "#859398"]
+ }
 }
