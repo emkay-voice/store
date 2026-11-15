@@ -123,21 +123,40 @@ async function testOne(c) {
 
     const job = await api("POST", "/api/plugins/install", { package: c.package });
     let state = job;
-    for (let i = 0; i < 120 && job.id && !["done", "failed", "error"].includes(state.state); i++) {
-      await sleep(5000);
-      state = await api("GET", `/api/plugins/jobs/${job.id}`);
+    let panel = true;
+    if (/plain OVOS package name/.test(job.detail || "")) {
+      // the panel only installs packages named ovos-* (ovos_webui
+      // installer.PACKAGE_RE); ask ovos-core's installer on the bus, as the
+      // panel itself does, so the skill is still tried
+      panel = false;
+      log("  the panel refuses the name; installing through ovos-core's installer");
+      await b.py(COLLECT);
+      await b.py(`from emkay_mobile import boot
+from emkay_mobile.browser import hand_over
+from ovos_bus_client.message import Message
+hand_over(lambda: boot.bus().emit(Message("ovos.pip.install", {"packages": [${JSON.stringify(c.package)}]})))
+"ok"`);
+      state = { state: "running" };
+      for (let i = 0; i < 120 && state.state === "running"; i++) {
+        await sleep(5000);
+        state = JSON.parse(await b.py(`import builtins, json
+done = [s for s in builtins._emkay_seen if '"ovos.pip.install.complete"' in s or '"ovos.pip.install.failed"' in s]
+json.dumps({"state": ("done" if "complete" in done[-1] else "failed") if done else "running", "lines": done[-1:]})`));
+      }
     }
+    const note = panel ? "" : "the settings panel only installs packages named ovos-*";
+    const result = (r) => ({ ...r, reason: [r.reason, note].filter(Boolean).join("; "), panel });
     if (state.state !== "done") {
-      return { status: "broken", reason: `does not install: ${why(state.lines || [], JSON.stringify(state).slice(0, 120))}` };
+      return result({ status: "broken", reason: `does not install: ${why(state.lines || [], JSON.stringify(state).slice(0, 120))}` });
     }
     await sleep(8000);
     const added = JSON.parse(await b.py(SKILLS)).filter((s) => !before.includes(s));
     if (!added.length) {
-      return { status: "broken", reason: `installs, but does not load: ${why(b.workerLog.slice(-60), "no skill appeared")}` };
+      return result({ status: "broken", reason: `installs, but does not load: ${why(b.workerLog.slice(-60), "no skill appeared")}` });
     }
     const sid = added[0];
     log(`  loaded as ${sid}`);
-    if (!c.examples.length) return { status: "untested", reason: "loads; it has no examples to try" };
+    if (!c.examples.length) return result({ status: "untested", reason: "loads; it has no examples to try" });
 
     await sleep(45000);   // padatious trains the new intents
     await b.py(COLLECT);
@@ -149,8 +168,8 @@ async function testOne(c) {
       log(`  "${ex}": ${n ? "answered" : "not answered"} by it`);
       if (n) { answered++; break; }   // one is enough
     }
-    if (answered) return { status: "works", reason: "" };
-    return { status: "untested", reason: "loads, but did not answer its own examples here" };
+    if (answered) return result({ status: "works", reason: "" });
+    return result({ status: "untested", reason: "loads, but did not answer its own examples here" });
   } catch (e) {
     return { status: "untested", reason: `test did not finish: ${e.message}` };
   } finally {
