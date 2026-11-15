@@ -1,0 +1,51 @@
+# The nightly skill test (emkay-voice/emkay#21): install the next few store
+# skills in Emkay (app.emkay.ai, headless Chrome), see whether they load and
+# answer their own examples, and commit the results to data/compat.json.
+# Then it starts the store build (pages.yml): a push made with the job's own
+# token does not start other workflows, a workflow_dispatch does.
+name: Test skills in Emkay
+
+on:
+  workflow_dispatch:
+    inputs:
+      max:
+        description: "How many skills to try"
+        default: "8"
+  schedule:
+    - cron: "17 2 * * *"   # after Emkay's nightly build, before the store's
+
+permissions:
+  contents: write
+  actions: write
+
+concurrency:
+  group: test-skills
+  cancel-in-progress: false
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Pick the skills to try
+        run: python tools/candidates.py --max "${{ inputs.max || '8' }}" > candidates.json
+      - name: Install and try each one
+        run: CHROME="$(command -v google-chrome || command -v chromium)" node tools/test_skills.mjs candidates.json
+      - name: Commit the results
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/compat.json
+          git diff --cached --quiet && { echo "nothing new"; exit 0; }
+          git commit -m "Skill test results $(date -u +%F)"
+          git push
+          gh workflow run pages.yml
+        env:
+          GH_TOKEN: ${{ github.token }}

@@ -1,8 +1,29 @@
 {
- "_doc": "What has been tried in Emkay (OVOS in the browser). status: works | broken; reason: why it does not work (shown in the store). Only what was actually tried goes here. Skills Emkay ships come from app.emkay.ai/build.json and need no entry. To be written by the test job of emkay-voice/emkay#21; until then by hand, from the tests in emkay-voice/emkay's tools/probes.",
- "ovos-skill-number-facts": {"status": "works", "reason": ""},
- "ovos-skill-convert": {"status": "works", "reason": ""},
- "ovos-skill-boot-finished": {"status": "broken", "reason": "waits for an audio service and a listener that a browser does not have"},
- "ovos-skill-andersen-tales": {"status": "broken", "reason": "its source site does not allow a browser to read it (CORS)"},
- "ovos-skill-grimm-tales": {"status": "broken", "reason": "its source site does not allow a browser to read it (CORS)"}
+ "_doc": "What has been tried in Emkay (OVOS in the browser). status: works | broken | untested; reason: why (shown in the store). Entries with `tested` (and `version`) are written by the nightly test (tools/test_skills.mjs, workflow test-skills.yml) and retried on a new version or after 30 days. Entries without `tested` are written by hand, for what the test cannot see, and are never retried. Skills Emkay ships come from app.emkay.ai/build.json and need no entry.",
+ "ovos-skill-number-facts": {
+  "status": "works",
+  "reason": ""
+ },
+ "ovos-skill-convert": {
+  "status": "works",
+  "reason": ""
+ },
+ "ovos-skill-boot-finished": {
+  "status": "broken",
+  "reason": "waits for an audio service and a listener that a browser does not have"
+ },
+ "ovos-skill-andersen-tales": {
+  "status": "broken",
+  "reason": "its source site does not allow a browser to read it (CORS)"
+ },
+ "ovos-skill-grimm-tales": {
+  "status": "broken",
+  "reason": "its source site does not allow a browser to read it (CORS)"
+ },
+ "ovos-skill-laugh": {
+  "status": "works",
+  "reason": "",
+  "version": "1.1.0",
+  "tested": "2026-11-15"
+ }
 }
