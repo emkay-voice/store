@@ -53,13 +53,6 @@
   "version": "3.1.0",
   "tested": "2026-11-15"
  },
- "ovos-skill-application-launcher": {
-  "status": "broken",
-  "reason": "does not install: {\"id\":\"ba04f99ab6e84d8a8a2998d50a2b92dc\",\"action\":\"install\",\"package\":\"ovos-skill-application-launcher\",\"state\":\"running",
-  "panel": true,
-  "version": "0.5.14",
-  "tested": "2026-11-16"
- },
  "neon-skill-about": {
   "status": "broken",
   "reason": "does not install: ERROR: No matching distribution found for ovos-bus-client>=0.0.3,~=0.0; the settings panel only installs packages named ovos-*",
