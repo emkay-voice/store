@@ -173,14 +173,6 @@
   "version": "0.4.0",
   "tested": "2026-11-16"
  },
- "ovos_tts_plugin_marytts": {
-  "status": "broken",
-  "reason": "does not work here: ValueError(\"'url' missing from MaryTTS plugin config\")",
-  "panel": true,
-  "kind": "tts",
-  "version": "0.1.0",
-  "tested": "2026-11-16"
- },
  "ovos-tts-plugin-pocket-tts": {
   "status": "broken",
   "reason": "does not install: ERROR: sentencepiece>=0.2.1 has no pure-Python wheel (only source or compiled builds), so it cannot be installed in the browser",
@@ -243,14 +235,6 @@
   "panel": true,
   "kind": "skill",
   "version": "1.0.9",
-  "tested": "2026-11-16"
- },
- "ovos-skill-365tomorrows-stories": {
-  "status": "untested",
-  "reason": "loads, but did not answer its own examples here",
-  "panel": true,
-  "kind": "skill",
-  "version": "0.1.8",
   "tested": "2026-11-16"
  }
 }

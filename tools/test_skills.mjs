@@ -84,7 +84,11 @@ builtins._emkay_seen = []
 boot.bus().on("message", lambda m: builtins._emkay_seen.append(m if isinstance(m, str) else m.serialize()))
 "ok"`;
 const answeredBy = (sid) => `import builtins, json
-hits = [s for s in builtins._emkay_seen if ('"speak"' in s or 'skill.handler.start' in s) and ${JSON.stringify(sid)} in s]
+# its own speech or handler, or its answer to a pipeline that asked it (a
+# common reading / common query / OCP provider answers with a ".response"
+# message, and the pipeline speaks for it)
+hits = [s for s in builtins._emkay_seen
+        if ('"speak"' in s or 'skill.handler.start' in s or '.response"' in s) and ${JSON.stringify(sid)} in s]
 builtins._emkay_seen.clear()
 json.dumps(len(hits))`;
 
@@ -189,7 +193,13 @@ async function checkPlugin(b, c, pkg) {
   if (c.api_key) return { status: "untested", reason: "installs; needs an API key to try" };
   const r = await CHECKS[c.kind](b, ids[0]);
   log(`  ${r.ok ? "passed" : "failed"}: ${r.note || r.reason}`);
-  return r.ok ? { status: "works", reason: "", note: r.note } : { status: "broken", reason: `does not work here: ${plain(r.reason)}` };
+  if (r.ok) return { status: "works", reason: "", note: r.note };
+  // a plugin that wants a server address or a key first is not broken: it
+  // needs setting up, which a test cannot do for the user
+  if (/missing from .*config|not configured|no (api[ _-]?)?key|api[ _-]?key|requires? (an? )?(url|host|server)/i.test(r.reason)) {
+    return { status: "untested", reason: `needs to be set up first: ${plain(r.reason)}` };
+  }
+  return { status: "broken", reason: `does not work here: ${plain(r.reason)}` };
 }
 
 /** Install, load and ask one skill; returns {status, reason}. */
