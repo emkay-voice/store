@@ -10,7 +10,9 @@ Entries in data/compat.json without "tested" were written by hand (a
 reason the test cannot see, such as CORS for a site the skill only reads
 when asked); those are never retested.
 
-Writes a JSON list of {package, version, skill_id, examples} to stdout.
+Skills, and the plugin kinds in PLUGIN_KINDS.
+Writes a JSON list of {package, version, skill_id, kind, api_key, examples}
+to stdout.
 Usage: python tools/candidates.py [--max N]
 """
 import argparse
@@ -21,6 +23,17 @@ import sys
 from build import EMKAY, KLONDIKE, REPO, load, norm
 
 RETEST_DAYS = 30
+
+#: the plugin types the test can try, by klondike's component_type; more
+#: come as their checks are written (see tools/test_skills.mjs, CHECKS)
+PLUGIN_KINDS = {"TTS Plugin": "tts", "STT Plugin": "stt"}
+
+
+def kind_of(s):
+    """"skill", a plugin kind from PLUGIN_KINDS, or None (not tested)."""
+    if s.get("type_group") == "Skill":
+        return "skill"
+    return PLUGIN_KINDS.get(s.get("component_type"))
 
 
 def english_examples(s) -> list:
@@ -44,8 +57,8 @@ def main():
     picks, seen = [], set()
     for s in load(KLONDIKE):
         pkg = s.get("package_name")
-        if s.get("type_group") != "Skill" or s.get("tier") != 1 or not s.get("on_pypi") \
-                or not pkg or s.get("archived"):
+        kind = kind_of(s)
+        if not kind or s.get("tier") != 1 or not s.get("on_pypi") or not pkg or s.get("archived"):
             continue
         key = norm(pkg)
         if key in seen or key in builtin:
@@ -66,7 +79,8 @@ def main():
             rank = (2, -age)
         picks.append((rank, -(s.get("stars") or 0), {
             "package": pkg, "version": version, "skill_id": s.get("skill_id") or "",
-            "examples": english_examples(s)}))
+            "kind": kind, "api_key": bool(s.get("requires_api_key")),
+            "examples": english_examples(s) if kind == "skill" else []}))
     picks.sort(key=lambda p: (p[0], p[1]))
     out = [p[2] for p in picks[:args.max]]
     print(f"{len(picks)} skills want a test; trying {len(out)}", file=sys.stderr)

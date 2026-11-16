@@ -98,6 +98,85 @@ function why(lines, fallback) {
   return (hit || fallback).replace(/\s+/g, " ").trim().slice(0, 200);
 }
 
+// ------------------------------------------------------------- plugins
+// A plugin works if it does its job the way Emkay uses it: chosen in
+// mycroft.conf like a user does in the panel, then used by Emkay's own code
+// (speech.py), not called directly. One check per kind; a kind not listed
+// here is not tested yet.
+
+/** The plugin ids an installed package registers for `kind` (its entry points). */
+const pluginIds = (pkg, kind) => `import json
+from importlib.metadata import distribution
+json.dumps([ep.name for ep in distribution(${JSON.stringify(pkg)}).entry_points if ep.group == "opm.${kind}"])`;
+
+/** Choose `id` as the `kind` plugin, as the panel's voice settings do. */
+const choose = (kind, id) => `from emkay_mobile import boot, speech
+from ovos_config import Configuration
+boot.write_user_config({${JSON.stringify(kind)}: {"module": ${JSON.stringify(id)}}})
+Configuration.reload()
+speech.reload()
+"ok"`;
+
+const CHECKS = {
+  /** Speak a sentence; it works if Emkay made the audio with this plugin. */
+  async tts(b, id) {
+    await b.py(choose("tts", id));
+    const mark = b.workerLog.length;
+    await b.py(`from emkay_mobile import boot
+from emkay_mobile.browser import hand_over
+hand_over(lambda: boot.emit("speak", {"utterance": "Hello, this is a test of the voice.", "lang": "en-US"}))
+"ok"`);
+    for (let i = 0; i < 60; i++) {
+      await sleep(2000);
+      const lines = b.workerLog.slice(mark);
+      const failed = lines.find((l) => /\[emkay\] tts failed/.test(l));
+      if (failed) return { ok: false, reason: why([failed.replace(/^.*tts failed \(/, "").replace(/\); using the fallback.*$/, "")], failed) };
+      const done = lines.map((l) => l.match(/\[emkay\] tts ([\d.]+)s for ([\d.]+)s of audio/)).find(Boolean);
+      if (done) {
+        return Number(done[2]) >= 0.5 ? { ok: true, note: `${done[2]} s of speech in ${done[1]} s` }
+          : { ok: false, reason: `made only ${done[2]} s of audio` };
+      }
+    }
+    return { ok: false, reason: "no speech after 2 minutes" };
+  },
+  /** Transcribe a known recording ("what time is it") through Emkay's own
+   *  path for recorded speech (worker_main.heard). */
+  async stt(b, id) {
+    await b.py(choose("stt", id));
+    const text = await b.js(`(async () => {
+      const r = await fetch("${TEST_WAV}");
+      const wav = new Uint8Array(await r.arrayBuffer());
+      const view = new DataView(wav.buffer);
+      let off = 12, rate = 16000, data = null;
+      while (off + 8 <= wav.length) {             // the WAV's chunks: fmt and data
+        const id = String.fromCharCode(...wav.slice(off, off + 4)), size = view.getUint32(off + 4, true);
+        if (id === "fmt ") rate = view.getUint32(off + 12, true);
+        if (id === "data") { data = wav.slice(off + 8, off + 8 + size); break; }
+        off += 8 + size + (size % 2);
+      }
+      return String(await Promise.race([
+        window.emkay.call("heard", { pcm: data.buffer, rate }, [data.buffer]),
+        new Promise((res) => setTimeout(() => res("TIMEOUT"), 240000))]));
+    })()`);
+    if (text === "TIMEOUT") return { ok: false, reason: "no transcription after 4 minutes" };
+    if (/time/i.test(text || "")) return { ok: true, note: `heard "${text}"` };
+    return { ok: false, reason: text ? `heard "${String(text).slice(0, 80)}" for "what time is it"`
+      : `heard nothing: ${why(b.workerLog.slice(-40), "no text")}` };
+  },
+};
+const TEST_WAV = "https://raw.githubusercontent.com/emkay-voice/emkay/main/tools/probes/audio/what_time.wav";
+
+/** Check one installed plugin package; returns {status, reason}. */
+async function checkPlugin(b, c, pkg) {
+  const ids = JSON.parse(await b.py(pluginIds(pkg, c.kind)) || "[]");
+  if (!ids.length) return { status: "broken", reason: `installs, but registers no ${c.kind} plugin` };
+  log(`  ${c.kind} plugin ${ids[0]}`);
+  if (c.api_key) return { status: "untested", reason: "installs; needs an API key to try" };
+  const r = await CHECKS[c.kind](b, ids[0]);
+  log(`  ${r.ok ? "passed" : "failed"}: ${r.note || r.reason}`);
+  return r.ok ? { status: "works", reason: "", note: r.note } : { status: "broken", reason: `does not work here: ${r.reason}` };
+}
+
 /** Install, load and ask one skill; returns {status, reason}. */
 async function testOne(c) {
   const b = await browser(c.package.replace(/\W+/g, "-"));
@@ -121,12 +200,14 @@ async function testOne(c) {
       const r = await b.js(`${w}.fetch("${path}", {method: "${method}",
         headers: {"content-type": "application/json"}${body ? `, body: JSON.stringify(${JSON.stringify(body)})` : ""}})
         .then(async (r) => ({status: r.status, body: await r.text()}))`);
-      try { return JSON.parse(r.body); } catch { return { raw: String(r?.body ?? r).slice(0, 200) }; }
+      try { return JSON.parse(r.body); } catch { return { raw: String(r?.body ?? r).slice(-1500) }; }
     };
     await api("POST", "/api/auth/token", { new: "emkay-skill-test" });
     const before = JSON.parse(await b.py(SKILLS));
 
-    const job = await api("POST", "/api/plugins/install", { package: c.package });
+    // PyPI's normalized form: the panel takes no underscores (ovos_tts_plugin_marytts)
+    const pkgName = c.package.toLowerCase().replace(/[-_.]+/g, "-");
+    const job = await api("POST", "/api/plugins/install", { package: pkgName });
     let state = job;
     let panel = true;
     if (/plain OVOS package name/.test(job.detail || "")) {
@@ -139,7 +220,7 @@ async function testOne(c) {
       await b.py(`from emkay_mobile import boot
 from emkay_mobile.browser import hand_over
 from ovos_bus_client.message import Message
-hand_over(lambda: boot.bus().emit(Message("ovos.pip.install", {"packages": [${JSON.stringify(c.package)}]})))
+hand_over(lambda: boot.bus().emit(Message("ovos.pip.install", {"packages": [${JSON.stringify(pkgName)}]})))
 "ok"`);
       state = { state: "running" };
       for (let i = 0; i < 120 && state.state === "running"; i++) {
@@ -158,9 +239,11 @@ json.dumps({"state": ("done" if "complete" in done[-1] else "failed") if done el
     const note = panel ? "" : "the settings panel only installs packages named ovos-*";
     const result = (r) => ({ ...r, reason: [r.reason, note].filter(Boolean).join("; "), panel });
     if (state.state !== "done") {
+      log(`  install answer: ${JSON.stringify(state).slice(-1500)}`);
       return result({ status: "broken", reason: `does not install: ${why(state.lines || [], JSON.stringify(state).slice(0, 120))}` });
     }
     await sleep(8000);
+    if (c.kind && c.kind !== "skill") return result(await checkPlugin(b, c, pkgName));
     const added = JSON.parse(await b.py(SKILLS)).filter((s) => !before.includes(s));
     if (!added.length) {
       return result({ status: "broken", reason: `installs, but does not load: ${why(b.workerLog.slice(-60), "no skill appeared")}` });
@@ -195,6 +278,6 @@ for (const c of candidates) {
   const result = await testOne(c);
   log(`  -> ${result.status}${result.reason ? `: ${result.reason}` : ""}`);
   if (result.reason.startsWith("test did not finish")) continue;   // tried again next night
-  compat[c.package] = { ...result, version: c.version, tested: today };
+  compat[c.package] = { ...result, kind: c.kind || "skill", version: c.version, tested: today };
   writeFileSync(COMPAT, JSON.stringify(compat, null, 1) + "\n");   // after each, so a crash keeps the rest
 }

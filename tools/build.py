@@ -31,6 +31,8 @@ import time
 import urllib.request
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+
 REPO = Path(__file__).resolve().parent.parent
 SITE = REPO / "site"
 
@@ -41,6 +43,10 @@ EMKAY = "https://app.emkay.ai/build.json"
 #: locale folders name them. The store speaks these.
 LANGS = ["en-us", "da-dk", "de-de", "fr-fr", "it-it", "es-es", "gl-es", "ca-es",
          "eu-es", "pt-pt", "pt-br", "nl-nl"]
+
+
+#: the store shelf for each plugin kind the test can try
+PLUGIN_CATEGORIES = {"tts": "voices", "stt": "listening"}
 
 
 def load(source: str):
@@ -143,6 +149,12 @@ def locale_texts() -> dict:
     return out
 
 
+def kind_of(s):
+    """"skill", a plugin kind (candidates.PLUGIN_KINDS), or None."""
+    from candidates import kind_of as k
+    return k(s)
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--klondike", default=KLONDIKE)
@@ -169,8 +181,10 @@ def main():
         pkg = s.get("package_name")
         # only what klondike calls "Looks Complete" (tier 1: a manifest, on
         # PyPI, a release or in OVOS' own store), not archived
-        if s.get("type_group") != "Skill" or s.get("tier") != 1 or not s.get("on_pypi") \
-                or not pkg or s.get("archived"):
+        # skills, and the plugin kinds the nightly test can try
+        # (tools/candidates.py, PLUGIN_KINDS)
+        kind = kind_of(s)
+        if not kind or s.get("tier") != 1 or not s.get("on_pypi") or not pkg or s.get("archived"):
             continue
         key = norm(pkg)
         if key in seen:      # the same package from a fork: keep the first (klondike ranks them)
@@ -187,7 +201,8 @@ def main():
         skills.append({
             "package": pkg,
             "id": s.get("id"),
-            "category": categorize(s, rules),
+            "kind": kind,
+            "category": categorize(s, rules) if kind == "skill" else PLUGIN_CATEGORIES[kind],
             "status": status,
             "reason": c.get("reason", ""),
             "texts": texts_for(s, names, descriptions),
@@ -213,14 +228,15 @@ def main():
     (SITE / "build.json").write_text(json.dumps({
         "built": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
         "skills": len(skills),
-        "categories": rules["order"] + ["other"],
+        "categories": rules["order"] + ["other"] + list(PLUGIN_CATEGORIES.values()),
         "langs": LANGS,
-        "featured": pick_featured(skills, feat_rules),
+        "featured": pick_featured([x for x in skills if x["kind"] == "skill"], feat_rules),
         "emkay": {k: emkay.get(k) for k in ("version", "build", "commit")},
     }, indent=1))
     index = write_package_index(
         [x["package"] for x in skills if x["status"] in ("builtin", "works")]
-        + [v.split("==")[0] for v in emkay.get("versions", [])])
+        + [v.split("==")[0] for v in emkay.get("versions", [])],
+        untested=[x["package"] for x in skills if x["status"] == "untested"])
     print(f"package index for the control panel: {index} packages")
     by = {}
     for s in skills:
@@ -231,7 +247,12 @@ def main():
 
 
 
-def write_package_index(packages) -> int:
+#: put before an untested package's summary in the index, so the panel
+#: shows it next to the package
+UNTESTED_NOTE = "[Not tested in Emkay yet] "
+
+
+def write_package_index(packages, untested=()) -> int:
     """A package index for Emkay's control panel (emkay-voice/emkay#21).
 
     The panel searches a package index (`webui.pypi_index`, ovos_webui's
@@ -240,10 +261,14 @@ def write_package_index(packages) -> int:
     wizard and the recommendations offer only what Emkay ships or what the
     nightly test found working, not all of PyPI. The packages themselves
     still come from PyPI: the JSON is PyPI's own, with its file URLs.
-    Only names the panel can install (ovos-*) are listed; it would refuse
-    the others anyway.
+    Untested packages are listed too, marked (UNTESTED_NOTE in their
+    summary): the panel installs only what its index has, so without them
+    neither the store's "Get" nor the nightly test could install them.
+    Broken ones are not listed. Only names the panel can install (ovos-*)
+    are listed; it would refuse the others anyway.
     """
-    names = sorted({norm(p) for p in packages if norm(p).startswith("ovos-")})
+    marked = {norm(p) for p in untested}
+    names = sorted({norm(p) for p in [*packages, *untested] if norm(p).startswith("ovos-")})
     kept = []
     for name in names:
         try:
@@ -251,6 +276,9 @@ def write_package_index(packages) -> int:
         except Exception as e:  # not on PyPI (any more): not offered
             print(f"  {name}: no PyPI entry ({e})", file=sys.stderr)
             continue
+        if name in marked and name not in {norm(p) for p in packages}:
+            info = data.setdefault("info", {})
+            info["summary"] = UNTESTED_NOTE + (info.get("summary") or "")
         d = SITE / "pypi" / name
         d.mkdir(parents=True, exist_ok=True)
         (d / "json").write_text(json.dumps(data, separators=(",", ":")))

@@ -59,7 +59,7 @@ app.emkay.ai/build.json ──────────────────�
 |---|---|---|---|
 | `builtin` | yes, "Comes with Emkay" | yes | Emkay ships it (from its `build.json`) |
 | `works` | yes, "Works in Emkay" | yes | installed, loaded and answered one of its own examples |
-| `untested` | yes, after the working ones, never featured | planned (marked) | not tried yet, or loads but could not be tried |
+| `untested` | yes, after the working ones, never featured | yes, marked "[Not tested in Emkay yet]" | not tried yet, or loads but could not be tried |
 | `broken` | no | no | tried, and does not install or load here |
 
 "Works" means it passed the test the way the device itself uses it, not just
@@ -70,8 +70,11 @@ that pip installed it.
 The [OVOS control panel](https://github.com/OpenVoiceOS/ovos-control-panel)
 searches a package index: `webui.pypi_index` in `mycroft.conf`, PyPI if not
 set. It reads `<base>/simple/` for the names and `<base>/pypi/<name>/json` for
-the details. `tools/build.py` writes both into the site, listing only what is
-`builtin` or `works`. The JSON is a copy of PyPI's own, so the files still come
+the details. `tools/build.py` writes both into the site, listing what is
+`builtin`, `works` or `untested` (with "[Not tested in Emkay yet]" in front of
+its summary, which the panel shows): the panel only installs what its index
+has, so an untested package must be there for "Get" and the nightly test to
+reach it. Broken packages are not listed. The JSON is a copy of PyPI's own, so the files still come
 from PyPI; only the choice is ours. Emkay sets
 `webui.pypi_index = https://store.emkay.ai`, so its panel's search, setup
 wizard and recommendations offer only what works.
@@ -99,6 +102,22 @@ and asks first.
 
 Either way Emkay opens its control panel searched for that package.
 
+## Plugins
+
+Plugins are tested like skills, then checked by kind, the way the device uses
+them: the plugin is chosen in `mycroft.conf` (as in the panel's voice
+settings) and then used by Emkay's own code, not called directly.
+
+| Kind | Check |
+|---|---|
+| TTS | Emkay speaks "Hello, this is a test of the voice." with it: works if half a second or more of speech came from this plugin, not from the fallback TTS |
+| STT | a recording of "what time is it" goes through Emkay's own path for recorded speech: works if the text has "time" in it |
+
+A plugin that needs an API key (klondike's `requires_api_key`) is installed
+and loaded but cannot be tried: `untested`, "needs an API key to try". The
+checks are `CHECKS` in `tools/test_skills.mjs`, and the kinds tried are
+`PLUGIN_KINDS` in `tools/candidates.py`; a kind joins when its check is written.
+
 ## Pipeline plugins: where they go
 
 A pipeline plugin does nothing until it is in `intents.pipeline`, at the right
@@ -125,15 +144,10 @@ overwrites or retries them.
 
 ## Planned
 
-- **Plugins** (TTS, STT, translate, language detection, solvers, pipelines,
-  transformers, VAD, wake words), each with one real check per type: speak a
-  sentence, transcribe a known recording, translate a phrase, answer "what is
-  the capital of France", and so on, through the device's own path (chosen in
-  the config, then used by OVOS), not by calling the plugin directly. Plugins
-  for hardware, media backends, microphones and GUIs make no sense in a
-  browser and are left out.
-- **Untested packages in the panel, marked** "Not tested in Emkay yet" in the
-  copied description, so the store's "Get" can reach them.
+- **More plugin kinds**: translate, language detection, solvers, pipelines,
+  transformers, VAD and wake words, each with its own check (see *Plugins*).
+  Plugins for hardware, media backends, microphones and GUIs make no sense in
+  a browser and are left out.
 - **"Works for me" / "Doesn't work"** buttons in the store that open a
   prefilled issue, so users' experience becomes overrides.
 
