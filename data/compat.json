@@ -172,5 +172,85 @@
   "kind": "tts",
   "version": "0.4.0",
   "tested": "2026-11-16"
+ },
+ "ovos_tts_plugin_marytts": {
+  "status": "broken",
+  "reason": "does not work here: ValueError(\"'url' missing from MaryTTS plugin config\")",
+  "panel": true,
+  "kind": "tts",
+  "version": "0.1.0",
+  "tested": "2026-11-16"
+ },
+ "ovos-tts-plugin-pocket-tts": {
+  "status": "broken",
+  "reason": "does not install: ERROR: sentencepiece>=0.2.1 has no pure-Python wheel (only source or compiled builds), so it cannot be installed in the browser",
+  "panel": true,
+  "kind": "tts",
+  "version": "0.2.0",
+  "tested": "2026-11-16"
+ },
+ "neon-skill-speed_test": {
+  "status": "broken",
+  "reason": "does not install: ERROR: No matching distribution found for ovos-bus-client>=0.0.3,~=0.0; the settings panel only installs packages named ovos-*",
+  "panel": false,
+  "kind": "skill",
+  "version": "2.0.0",
+  "tested": "2026-11-16"
+ },
+ "neon-skill-update": {
+  "status": "broken",
+  "reason": "does not install: ERROR: No matching distribution found for ovos-bus-client>=0.0.3,~=0.0; the settings panel only installs packages named ovos-*",
+  "panel": false,
+  "kind": "skill",
+  "version": "3.1.2",
+  "tested": "2026-11-16"
+ },
+ "ovos-stt-plugin-chromium": {
+  "status": "broken",
+  "reason": "does not install: ERROR: ovos-stt-plugin-chromium==0.1.2 has no pure-Python wheel (only source or compiled builds), so it cannot be installed in the browser",
+  "panel": true,
+  "kind": "stt",
+  "version": "0.1.2",
+  "tested": "2026-11-16"
+ },
+ "ovos-tts-plugin-edge-tts": {
+  "status": "broken",
+  "reason": "does not work here: it opens its own network connection (to speech.platform.bing.com), which a browser does not allow",
+  "panel": true,
+  "kind": "tts",
+  "version": "0.2.2",
+  "tested": "2026-11-16"
+ },
+ "skill-easter-eggs": {
+  "status": "works",
+  "reason": "the settings panel only installs packages named ovos-*",
+  "panel": false,
+  "kind": "skill",
+  "version": "1.2.5",
+  "tested": "2026-11-16"
+ },
+ "skill-monster-scanner": {
+  "status": "works",
+  "reason": "the settings panel only installs packages named ovos-*",
+  "panel": false,
+  "kind": "skill",
+  "version": "2.2.4",
+  "tested": "2026-11-16"
+ },
+ "ovos-skill-wallpapers": {
+  "status": "works",
+  "reason": "",
+  "panel": true,
+  "kind": "skill",
+  "version": "1.0.9",
+  "tested": "2026-11-16"
+ },
+ "ovos-skill-365tomorrows-stories": {
+  "status": "untested",
+  "reason": "loads, but did not answer its own examples here",
+  "panel": true,
+  "kind": "skill",
+  "version": "0.1.8",
+  "tested": "2026-11-16"
  }
 }
