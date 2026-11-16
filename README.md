@@ -12,12 +12,19 @@ to say to them.
 - **Works in Emkay?** Each skill says whether it comes with Emkay (from
   [app.emkay.ai/build.json](https://app.emkay.ai/build.json)), has been tried
   and works, or has not been tested yet ([data/compat.json](data/compat.json)).
-  A skill that does not work in a browser is left out.
-  A nightly test job is planned in
-  [emkay-voice/emkay#21](https://github.com/emkay-voice/emkay/issues/21).
-- **Get:** opens `app.emkay.ai/?install=<package>` in the same browser, where
-  your Emkay lives. Emkay opens its control panel at that package, and the
-  panel's own Install button does the rest (it asks first).
+  A skill that does not work in a browser is left out. A nightly job installs
+  the next skills in Emkay and tries them
+  ([emkay-voice/emkay#21](https://github.com/emkay-voice/emkay/issues/21)).
+- **A package index for the control panel:** `store.emkay.ai/simple/` lists
+  only what works, and Emkay's control panel searches it instead of all of
+  PyPI. Any OVOS device can use it (`webui.pypi_index`).
+- **Get:** inside Emkay (menu → Skill store) it hands the package to that
+  Emkay; on its own it opens `app.emkay.ai/?install=<package>`, which hands it
+  to an Emkay already open in that browser. Emkay opens its control panel at
+  that package, and the panel's own Install button does the rest (it asks first).
+
+**How it all works, and how to make a store like this for your own device:
+[docs/how-it-works.md](docs/how-it-works.md).**
 - **Languages:** the twelve Emkay speaks (80 % or more on ovos-localize). The
   store's own texts are in [`locale/`](locale), one `.dialog` file per text, as
   in an OVOS skill.
@@ -32,7 +39,11 @@ cd site && python3 -m http.server 8090
 - [`data/categories.json`](data/categories.json): the store's categories, the
   words that place a skill in one, overrides, readable names and descriptions
 - [`data/featured.json`](data/featured.json): how the front page's *Featured* row is picked: only skills that work in Emkay; new and recently updated ones first, then the skill of the week (changes every ISO week)
-- [`data/compat.json`](data/compat.json): what has been tried in Emkay
+- [`data/compat.json`](data/compat.json): what has been tried in Emkay; the
+  nightly test writes entries with `tested`, entries without it are written
+  by hand and never retried
+- `tools/candidates.py` picks the next skills to test; `tools/test_skills.mjs`
+  installs and tries them in Emkay (workflow `test-skills.yml`)
 - `tools/make_locale.py` seeded `locale/`; it only adds missing files
 - `tools/shot.mjs URL OUT.png 390x844`: a screenshot in headless Chromium
 
