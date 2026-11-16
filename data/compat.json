@@ -41,10 +41,11 @@
  },
  "skill-homeassistant": {
   "status": "broken",
-  "reason": "does not install: ERROR: nested-lookup<1.0,>=0.2 has no pure-Python wheel (only source or compiled builds), so it cannot be installed in the browser; the settings panel only installs packages named ovos-*",
-  "panel": false,
-  "version": "1.4.6",
-  "tested": "2026-11-15"
+  "reason": "does not install: {\"raw\":\"[object Object]\"}",
+  "panel": true,
+  "kind": "skill",
+  "version": "1.4.7",
+  "tested": "2026-11-16"
  },
  "neon-skill-alerts": {
   "status": "broken",
@@ -239,7 +240,25 @@
  },
  "ovos-media-provider-pyradios": {
   "status": "broken",
-  "reason": "does not install: {\"detail\":\"'ovos-media-provider-pyradios' is not one of the OVOS plugin families this page installs\"}",
+  "reason": "does not install: {\"raw\":\"File \\\"/lib/python3.14/site-packages/starlette/concurrency.py\\\", line 34, in run_in_threadpool\\n return await",
+  "panel": true,
+  "kind": "media_provider",
+  "version": "0.0.1a5",
+  "tested": "2026-11-16"
+ },
+ "ovos-media-provider-news": {
+  "status": "works",
+  "reason": "",
+  "note": "\"news\": 25 results, e.g. NPR (news//https)",
+  "panel": true,
+  "kind": "media_provider",
+  "version": "0.0.1a7",
+  "tested": "2026-11-16"
+ },
+ "ovos-media-provider-somafm": {
+  "status": "works",
+  "reason": "",
+  "note": "\"news\": 40 results, e.g. Seven Inch Soul (https)",
   "panel": true,
   "kind": "media_provider",
   "version": "0.0.1a5",
