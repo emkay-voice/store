@@ -148,6 +148,12 @@ hand_over(lambda: boot.bus().emit(Message("ovos.pip.install", {"packages": [${JS
 done = [s for s in builtins._emkay_seen if '"ovos.pip.install.complete"' in s or '"ovos.pip.install.failed"' in s]
 json.dumps({"state": ("done" if "complete" in done[-1] else "failed") if done else "running", "lines": done[-1:]})`));
       }
+    } else {
+      // the panel's install job: wait for pip to finish
+      for (let i = 0; i < 120 && job.id && !["done", "failed", "error"].includes(state.state); i++) {
+        await sleep(5000);
+        state = await api("GET", `/api/plugins/jobs/${job.id}`);
+      }
     }
     const note = panel ? "" : "the settings panel only installs packages named ovos-*";
     const result = (r) => ({ ...r, reason: [r.reason, note].filter(Boolean).join("; "), panel });

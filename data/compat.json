@@ -53,39 +53,11 @@
   "version": "3.1.0",
   "tested": "2026-11-15"
  },
- "ovos-skill-icanhazdadjokes": {
-  "status": "broken",
-  "reason": "does not install: {\"id\":\"3ea56decc5de4cc79c35a415e026fea3\",\"action\":\"install\",\"package\":\"ovos-skill-icanhazdadjokes\",\"state\":\"running\",\"re",
-  "panel": true,
-  "version": "0.3.7",
-  "tested": "2026-11-16"
- },
  "ovos-skill-application-launcher": {
   "status": "broken",
   "reason": "does not install: {\"id\":\"ba04f99ab6e84d8a8a2998d50a2b92dc\",\"action\":\"install\",\"package\":\"ovos-skill-application-launcher\",\"state\":\"running",
   "panel": true,
   "version": "0.5.14",
-  "tested": "2026-11-16"
- },
- "ovos-skill-iss-location": {
-  "status": "broken",
-  "reason": "does not install: {\"id\":\"f486f1ab0d594f49b25dcd345516d205\",\"action\":\"install\",\"package\":\"ovos-skill-iss-location\",\"state\":\"running\",\"retur",
-  "panel": true,
-  "version": "0.2.16",
-  "tested": "2026-11-16"
- },
- "ovos-skill-moviemaster": {
-  "status": "broken",
-  "reason": "does not install: {\"id\":\"77d72a74b205438989329bde99edeffa\",\"action\":\"install\",\"package\":\"ovos-skill-moviemaster\",\"state\":\"running\",\"return",
-  "panel": true,
-  "version": "0.0.12",
-  "tested": "2026-11-16"
- },
- "ovos-skill-confucius-quotes": {
-  "status": "broken",
-  "reason": "does not install: {\"id\":\"aa1d8028300a441389bf17fc5a00b3d1\",\"action\":\"install\",\"package\":\"ovos-skill-confucius-quotes\",\"state\":\"running\",\"r",
-  "panel": true,
-  "version": "0.2.0",
   "tested": "2026-11-16"
  },
  "neon-skill-about": {
