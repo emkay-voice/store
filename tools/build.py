@@ -218,12 +218,54 @@ def main():
         "featured": pick_featured(skills, feat_rules),
         "emkay": {k: emkay.get(k) for k in ("version", "build", "commit")},
     }, indent=1))
+    index = write_package_index(
+        [x["package"] for x in skills if x["status"] in ("builtin", "works")]
+        + [v.split("==")[0] for v in emkay.get("versions", [])])
+    print(f"package index for the control panel: {index} packages")
     by = {}
     for s in skills:
         by[s["category"]] = by.get(s["category"], 0) + 1
     print(f"{len(skills)} skills: " + ", ".join(f"{k} {v}" for k, v in sorted(by.items()))
           + f"; built in {sum(s['status'] == 'builtin' for s in skills)}"
           + f"; left out (does not work in a browser): {', '.join(hidden) or 'none'}")
+
+
+
+def write_package_index(packages) -> int:
+    """A package index for Emkay's control panel (emkay-voice/emkay#21).
+
+    The panel searches a package index (`webui.pypi_index`, ovos_webui's
+    pypi.py): `<base>/simple/` for the names and `<base>/pypi/<name>/json`
+    for the details. Emkay points it here, so the panel's search, the setup
+    wizard and the recommendations offer only what Emkay ships or what the
+    nightly test found working, not all of PyPI. The packages themselves
+    still come from PyPI: the JSON is PyPI's own, with its file URLs.
+    Only names the panel can install (ovos-*) are listed; it would refuse
+    the others anyway.
+    """
+    names = sorted({norm(p) for p in packages if norm(p).startswith("ovos-")})
+    kept = []
+    for name in names:
+        try:
+            data = load(f"https://pypi.org/pypi/{name}/json")
+        except Exception as e:  # not on PyPI (any more): not offered
+            print(f"  {name}: no PyPI entry ({e})", file=sys.stderr)
+            continue
+        d = SITE / "pypi" / name
+        d.mkdir(parents=True, exist_ok=True)
+        (d / "json").write_text(json.dumps(data, separators=(",", ":")))
+        files = data.get("urls") or []
+        links = "\n".join(f'<a href="{f["url"]}#sha256={f["digests"]["sha256"]}">{f["filename"]}</a><br>'
+                          for f in files)
+        (SITE / "simple" / name).mkdir(parents=True, exist_ok=True)
+        (SITE / "simple" / name / "index.html").write_text(
+            f"<!DOCTYPE html><html><body>\n{links}\n</body></html>\n")
+        kept.append(name)
+    (SITE / "simple" / "index.html").write_text(
+        "<!DOCTYPE html><html><body>\n"
+        + "\n".join(f'<a href="/simple/{n}/">{n}</a>' for n in kept)
+        + "\n</body></html>\n")
+    return len(kept)
 
 
 if __name__ == "__main__":
