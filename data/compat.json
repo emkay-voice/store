@@ -108,5 +108,69 @@
   "panel": false,
   "version": "0.0.1",
   "tested": "2026-11-16"
+ },
+ "ovos-stt-plugin-vosk": {
+  "status": "broken",
+  "reason": "does not install: Failed: error in pip subprocess",
+  "panel": true,
+  "kind": "stt",
+  "version": "0.2.7",
+  "tested": "2026-11-16"
+ },
+ "ovos-stt-plugin-whispercpp": {
+  "status": "broken",
+  "reason": "does not install: Failed: error in pip subprocess",
+  "panel": true,
+  "kind": "stt",
+  "version": "0.0.1",
+  "tested": "2026-11-16"
+ },
+ "ovos-stt-plugin-fasterwhisper": {
+  "status": "broken",
+  "reason": "does not install: Failed: error in pip subprocess",
+  "panel": true,
+  "kind": "stt",
+  "version": "0.4.0",
+  "tested": "2026-11-16"
+ },
+ "ovos-stt-plugin-onnx-asr": {
+  "status": "broken",
+  "reason": "does not work here: heard \"[object Object]\" for \"what time is it\"",
+  "panel": true,
+  "kind": "stt",
+  "version": "0.0.1",
+  "tested": "2026-11-16"
+ },
+ "ovos-tts-plugin-coqui": {
+  "status": "broken",
+  "reason": "does not install: Failed: error in pip subprocess",
+  "panel": true,
+  "kind": "tts",
+  "version": "0.2.0",
+  "tested": "2026-11-16"
+ },
+ "ovos-skill-moviemaster": {
+  "status": "works",
+  "reason": "",
+  "panel": true,
+  "kind": "skill",
+  "version": "0.0.12",
+  "tested": "2026-11-16"
+ },
+ "ovos-tts-plugin-cotovia": {
+  "status": "broken",
+  "reason": "does not work here: RuntimeError('No cotovia voices found! did you install any?')",
+  "panel": true,
+  "kind": "tts",
+  "version": "0.4.3",
+  "tested": "2026-11-16"
+ },
+ "ovos-tts-plugin-kokoro": {
+  "status": "broken",
+  "reason": "does not install: Failed: error in pip subprocess",
+  "panel": true,
+  "kind": "tts",
+  "version": "0.4.0",
+  "tested": "2026-11-16"
  }
 }
