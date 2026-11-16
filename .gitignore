@@ -2,3 +2,5 @@ site/data/
 site/texts.json
 site/build.json
 __pycache__/
+site/pypi/
+site/simple/
