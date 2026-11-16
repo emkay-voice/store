@@ -378,10 +378,17 @@ async function testOne(c) {
     const job = await api("POST", "/api/plugins/install", { package: pkgName });
     let state = job;
     let panel = true;
+    let note = "";
     if (/plain OVOS package name/.test(job.detail || "")) {
-      // the panel only installs packages named ovos-* (ovos_webui
-      // installer.PACKAGE_RE); ask ovos-core's installer on the bus, as the
-      // panel itself does, so the skill is still tried
+      note = "the settings panel only installs packages named ovos-*";
+    } else if (/not one of the OVOS plugin families/.test(job.detail || "")) {
+      // a family the panel does not know yet (ovos_webui pypi.FAMILIES),
+      // e.g. ovos-media-provider-* until OpenVoiceOS/ovos-control-panel#104
+      note = "the settings panel does not install this kind of plugin yet";
+    }
+    if (note) {
+      // ask ovos-core's installer on the bus, as the panel itself does, so
+      // the package is still tried
       panel = false;
       log("  the panel refuses the name; installing through ovos-core's installer");
       await b.py(`from emkay_mobile import boot
@@ -403,7 +410,6 @@ json.dumps({"state": ("done" if "complete" in done[-1] else "failed") if done el
         state = await api("GET", `/api/plugins/jobs/${job.id}`);
       }
     }
-    const note = panel ? "" : "the settings panel only installs packages named ovos-*";
     const result = (r) => ({ ...r, reason: [r.reason, note].filter(Boolean).join("; "), panel });
     if (state.state !== "done" && panel) {
       // the panel's job says only "error in pip subprocess"; pip's output is

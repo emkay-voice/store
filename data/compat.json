@@ -236,5 +236,13 @@
   "kind": "skill",
   "version": "1.0.9",
   "tested": "2026-11-16"
+ },
+ "ovos-media-provider-pyradios": {
+  "status": "broken",
+  "reason": "does not install: {\"detail\":\"'ovos-media-provider-pyradios' is not one of the OVOS plugin families this page installs\"}",
+  "panel": true,
+  "kind": "media_provider",
+  "version": "0.0.1a5",
+  "tested": "2026-11-16"
  }
 }
