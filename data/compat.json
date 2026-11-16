@@ -73,5 +73,40 @@
   "panel": false,
   "version": "0.2.0",
   "tested": "2026-11-16"
+ },
+ "ovos-skill-icanhazdadjokes": {
+  "status": "works",
+  "reason": "",
+  "panel": true,
+  "version": "0.3.7",
+  "tested": "2026-11-16"
+ },
+ "ovos-skill-application-launcher": {
+  "status": "broken",
+  "reason": "does not install: Failed: error in pip subprocess",
+  "panel": true,
+  "version": "0.5.14",
+  "tested": "2026-11-16"
+ },
+ "ovos-skill-iss-location": {
+  "status": "works",
+  "reason": "",
+  "panel": true,
+  "version": "0.2.16",
+  "tested": "2026-11-16"
+ },
+ "ovos-skill-confucius-quotes": {
+  "status": "works",
+  "reason": "",
+  "panel": true,
+  "version": "0.2.0",
+  "tested": "2026-11-16"
+ },
+ "neon-skill-messaging": {
+  "status": "broken",
+  "reason": "does not install: ERROR: No matching distribution found for ovos-bus-client>=0.0.3,~=0.0; the settings panel only installs packages named ovos-*",
+  "panel": false,
+  "version": "0.0.1",
+  "tested": "2026-11-16"
  }
 }
