@@ -45,6 +45,7 @@ jobs:
           git add data/compat.json
           git diff --cached --quiet && { echo "nothing new"; exit 0; }
           git commit -m "Skill test results $(date -u +%F)"
+          git pull --rebase -q   # the store may have moved on meanwhile
           git push
           gh workflow run pages.yml
         env:
