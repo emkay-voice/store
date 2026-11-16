@@ -98,6 +98,10 @@ function plain(reason) {
   if (/ClientConnector|aiohttp|socket\.gaierror|OSError: \[Errno 50\]|websocket/i.test(reason)) {
     return `it opens its own network connection${host ? ` (to ${host})` : ""}, which a browser does not allow`;
   }
+  const blocked = reason.match(/NetworkError: .*Failed to load '([^']+)'/);
+  if (blocked) {
+    return `it reads ${new URL(blocked[1]).host}, which does not let a browser read it (CORS)`;
+  }
   return reason.replace(/\(ConnectionKey\(.*$/, "").slice(0, 200);
 }
 
@@ -146,7 +150,10 @@ Configuration.reload()
 /** Python's result through Emkay's own (callPromising) path, or {error}. */
 async function run(b, code) {
   const out = await b.pyAsync(code);
-  return String(out).startsWith("ERR ") ? { error: String(out).slice(4) } : { value: String(out) };
+  if (!String(out).startsWith("ERR ")) return { value: String(out) };
+  const text = String(out).slice(4);
+  // a JS network refusal says most; else the exception line of the traceback
+  return { error: text.match(/NetworkError: .*/)?.[0] || why(text.split("\n"), text.slice(-200)) };
 }
 
 /** Choose `id` as the `kind` plugin, as the panel's voice settings do. */
@@ -240,11 +247,20 @@ load_question_solver_plugin(${JSON.stringify(id)})().spoken_answer("What is the 
    *  the install (pipeline_place.py). It works if it is there, Emkay still
    *  answers "what time is it", and it matches one of its own examples. */
   async pipeline(b, id, c) {
-    const st = JSON.parse(await b.py(`import json
+    // Emkay places it when ovos-core reports the install done; give it a moment
+    let st;
+    for (let i = 0; i < 15; i++) {
+      st = JSON.parse(await b.py(`import json
 from emkay_mobile import boot
 from ovos_config import Configuration
 json.dumps({"placed": [p for p in Configuration()["intents"]["pipeline"] if p == ${JSON.stringify(id)} or p.startswith(${JSON.stringify(id + "-")})],
             "loaded": ${JSON.stringify(id)} in boot._manager.intents.pipeline_plugins})`));
+      if (st.placed.length) break;
+      await sleep(2000);
+    }
+    if (!st.placed.length) {
+      log(`  placement: ${b.workerLog.filter((l) => /pipeline_place|pipeline: placed|pipelines_seen/.test(l)).slice(-5).join(" | ").slice(0, 600) || "nothing logged"}`);
+    }
     if (!st.loaded) return { ok: false, reason: `installs, but ovos-core did not load it: ${why(b.workerLog.slice(-40), "no error logged")}` };
     if (!st.placed.length) return { ok: false, reason: "loads, but has no stage Emkay could place in the pipeline" };
     let mark = b.workerLog.length;
@@ -253,7 +269,8 @@ json.dumps({"placed": [p for p in Configuration()["intents"]["pipeline"] if p ==
     if (!b.workerLog.slice(mark).some((l) => /date-time.*what_t|time.*skill.*match|\bmatch\b.*time/i.test(l))) {
       return { ok: false, reason: `with ${st.placed.join(", ")} in the pipeline, "what time is it" is not answered` };
     }
-    for (const ex of c.examples) {
+    const examples = c.examples.length ? c.examples : registeredExamples(b, id);
+    for (const ex of examples) {
       mark = b.workerLog.length;
       await b.js(`window.emkay.call("say", {text: ${JSON.stringify(ex)}}); true`);
       await sleep(15000);
@@ -262,9 +279,19 @@ json.dumps({"placed": [p for p in Configuration()["intents"]["pipeline"] if p ==
       }
     }
     return { ok: null, reason: `placed as ${st.placed.join(", ")} and Emkay still answers, ` +
-      (c.examples.length ? "but it matched none of its own examples" : "but it has no examples to try") };
+      (examples.length ? "but it matched none of its own examples" : "but it has no examples to try") };
   },
 });
+
+/** The example phrases a plugin or skill registered itself (OVOS logs them:
+ *  "<id>.<author> - INFO - Registering example utterances ... - ['...', ...]"),
+ *  for when klondike has none. */
+function registeredExamples(b, id) {
+  const line = b.workerLog.find((l) => l.includes(id) && l.includes("Registering example utterances"));
+  const list = line?.match(/\[(.*)\]\s*$/)?.[1];
+  if (!list) return [];
+  return [...list.matchAll(/'((?:[^'\\]|\\.)*)'|"((?:[^"\\]|\\.)*)"/g)].map((m) => m[1] ?? m[2]).slice(0, 3);
+}
 
 const TEST_WAV = "https://raw.githubusercontent.com/emkay-voice/emkay/main/tools/probes/audio/what_time.wav";
 
@@ -275,7 +302,7 @@ async function checkPlugin(b, c, pkg) {
   log(`  ${c.kind} plugin ${ids[0]}`);
   if (c.api_key) return { status: "untested", reason: "installs; needs an API key to try" };
   const r = await CHECKS[c.kind](b, ids[0], c);
-  log(`  ${r.ok ? "passed" : "failed"}: ${r.note || r.reason}`);
+  log(`  ${r.ok ? "passed" : r.ok === null ? "not decided" : "failed"}: ${r.note || r.reason}`);
   if (r.ok) return { status: "works", reason: "", note: r.note };
   if (r.ok === null) return { status: "untested", reason: r.reason };
   // a plugin that wants a server address or a key first is not broken: it
