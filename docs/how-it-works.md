@@ -99,6 +99,22 @@ and asks first.
 
 Either way Emkay opens its control panel searched for that package.
 
+## Pipeline plugins: where they go
+
+A pipeline plugin does nothing until it is in `intents.pipeline`, at the right
+place. The device places it, not the store, by one rule taken from OVOS
+itself rather than from READMEs: a pipeline plugin registers either one
+stage or three (`<id>-high`, `-medium`, `-low`, as
+`ovos-padatious-pipeline-plugin-high` in OVOS' default pipeline), and each
+stage goes next to the stages of the same confidence; a single stage goes
+before the medium fallbacks. Emkay does this on every boot and right after
+an install, and has ovos-core load the plugin at once
+(`intent.service.pipelines.reload`). Plugins whose README asks for something
+else are listed as exceptions in Emkay's
+[`pipeline_place.py`](https://github.com/emkay-voice/emkay/blob/main/py/emkay_mobile/pipeline_place.py).
+A device that wants the same can copy that file: it only uses
+ovos-plugin-manager.
+
 ## Overrides
 
 Some verdicts a test cannot reach: a skill whose source site refuses
@@ -116,10 +132,6 @@ overwrites or retries them.
   the config, then used by OVOS), not by calling the plugin directly. Plugins
   for hardware, media backends, microphones and GUIs make no sense in a
   browser and are left out.
-- **Pipeline placement without hand work**: a pipeline plugin registers either
-  one stage or `-high`/`-medium`/`-low` stages (as `ovos-padatious-pipeline-plugin-high`
-  in OVOS' default pipeline); the test places each stage next to the stages of
-  the same confidence. Exceptions go into an override file.
 - **Untested packages in the panel, marked** "Not tested in Emkay yet" in the
   copied description, so the store's "Get" can reach them.
 - **"Works for me" / "Doesn't work"** buttons in the store that open a
