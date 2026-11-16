@@ -47,7 +47,8 @@ LANGS = ["en-us", "da-dk", "de-de", "fr-fr", "it-it", "es-es", "gl-es", "ca-es",
 
 #: the store shelf for each plugin kind the test can try
 PLUGIN_CATEGORIES = {"tts": "voices", "stt": "listening", "translate": "language",
-                     "lang_detect": "language", "solver": "answers", "pipeline": "pipelines"}
+                     "lang_detect": "language", "solver": "answers", "pipeline": "pipelines",
+                     "media_provider": "music"}
 
 
 def load(source: str):
@@ -156,6 +157,12 @@ def kind_of(s):
     return k(s)
 
 
+def taken(s) -> bool:
+    """Whether the store looks at a klondike entry (candidates.taken)."""
+    from candidates import taken as t
+    return t(s)
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--klondike", default=KLONDIKE)
@@ -180,12 +187,11 @@ def main():
     skills, seen, hidden = [], set(), []
     for s in found:
         pkg = s.get("package_name")
-        # only what klondike calls "Looks Complete" (tier 1: a manifest, on
-        # PyPI, a release or in OVOS' own store), not archived
-        # skills, and the plugin kinds the nightly test can try
-        # (tools/candidates.py, PLUGIN_KINDS)
+        # skills and the plugin kinds the nightly test can try, from what
+        # klondike calls "Looks Complete" (tier 1), on PyPI, not archived;
+        # see tools/candidates.py, taken() and PLUGIN_KINDS
         kind = kind_of(s)
-        if not kind or s.get("tier") != 1 or not s.get("on_pypi") or not pkg or s.get("archived"):
+        if not kind or not taken(s):
             continue
         key = norm(pkg)
         if key in seen:      # the same package from a fork: keep the first (klondike ranks them)

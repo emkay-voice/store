@@ -33,10 +33,33 @@ PLUGIN_KINDS = {"TTS Plugin": "tts", "STT Plugin": "stt", "Translate Plugin": "t
 
 
 def kind_of(s):
-    """"skill", a plugin kind from PLUGIN_KINDS, or None (not tested)."""
+    """"skill", a plugin kind from PLUGIN_KINDS, "media_provider", or None
+    (not tested)."""
     if s.get("type_group") == "Skill":
         return "skill"
+    # OCP's MediaProviders (opm.media.provider: ovos-media-provider-pyradios,
+    # -somafm, -news, ...), which replace the old OCP search skills; klondike
+    # files them as "Provider Plugin"
+    name = s.get("package_name") or s.get("name") or ""
+    if s.get("component_type") == "Provider Plugin" and "media-provider" in name:
+        return "media_provider"
     return PLUGIN_KINDS.get(s.get("component_type"))
+
+
+def taken(s) -> bool:
+    """Whether the store looks at this klondike entry at all.
+
+    Klondike's tier 1 ("Looks Complete": a manifest, on PyPI, a release or
+    in OVOS' own store), on PyPI and not archived. One exception: OCP's
+    MediaProviders from OpenVoiceOS itself, which are tier 2 only because
+    they have no GitHub release yet (alphas on PyPI); they replace the old
+    OCP search skills, which are tier 1."""
+    if not s.get("on_pypi") or not s.get("package_name") or s.get("archived"):
+        return False
+    if s.get("tier") == 1:
+        return True
+    return (kind_of(s) == "media_provider" and s.get("tier") == 2
+            and s.get("author") == "OpenVoiceOS")
 
 
 def english_examples(s) -> list:
@@ -65,7 +88,7 @@ def main():
     for s in load(KLONDIKE):
         pkg = s.get("package_name")
         kind = kind_of(s)
-        if not kind or s.get("tier") != 1 or not s.get("on_pypi") or not pkg or s.get("archived"):
+        if not kind or not taken(s):
             continue
         key = norm(pkg)
         if key in seen or key in builtin:

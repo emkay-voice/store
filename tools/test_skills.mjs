@@ -139,6 +139,7 @@ const GROUPS = {
   translate: ["opm.lang.translate", "neon.plugin.lang.translate"],
   lang_detect: ["opm.lang.detect", "neon.plugin.lang.detect"],
   solver: ["opm.solver.question", "neon.plugin.solver"], pipeline: ["opm.pipeline"],
+  media_provider: ["opm.media.provider"],
 };
 
 /** Choose `id` in the `language` section, as OVOS' translation and detection factories read it. */
@@ -281,6 +282,35 @@ json.dumps({"placed": [p for p in Configuration()["intents"]["pipeline"] if p ==
     }
     return { ok: null, reason: `placed as ${st.placed.join(", ")} and Emkay still answers, ` +
       (examples.length ? "but it matched none of its own examples" : "but it has no examples to try") };
+  },
+  /** OCP's MediaProviders: Emkay loads a new one into the running OCP right
+   *  after the install (pipeline_place.reload_media_providers). It works if
+   *  OCP has it and OCP's own provider search finds something playable for
+   *  one of a few everyday words (its examples first, if it has any). */
+  async media_provider(b, id, c) {
+    const words = [...(c.examples || []).map((e) => e.replace(/^play\s+/i, "")), "news", "jazz", "radio", "music"];
+    const r = await run(b, `import json
+from emkay_mobile import boot
+from ovos_utils.ocp import MediaType
+ocp = next((p for p in boot._manager.intents.pipeline_plugins.values() if hasattr(p, "media_providers")), None)
+out = {"loaded": bool(ocp) and ${JSON.stringify(id)} in ocp.media_providers, "found": None}
+if out["loaded"]:
+    for word in ${JSON.stringify(words)}:
+        hits = [h for h in ocp._search_providers(word, MediaType.GENERIC, "en-us")
+                if str(h.get("skill_id", "")).startswith(${JSON.stringify(id)}) and h.get("uri")]
+        if hits:
+            out["found"] = {"word": word, "count": len(hits), "title": hits[0].get("title"), "uri": hits[0]["uri"]}
+            break
+json.dumps(out)`);
+    if (r.error) return { ok: false, reason: r.error };
+    const st = JSON.parse(r.value);
+    if (!st.loaded) return { ok: false, reason: `OCP did not load it: ${why(b.workerLog.slice(-40), "not among OCP's media providers")}` };
+    if (!st.found) {
+      const err = why(b.workerLog.slice(-60).filter((l) => /media_provider|Traceback|Error/.test(l)), "");
+      return err ? { ok: false, reason: err } : { ok: null, reason: "found nothing for news, jazz, radio or music (may need to be set up)" };
+    }
+    const f = st.found;
+    return { ok: true, note: `"${f.word}": ${f.count} results, e.g. ${String(f.title).slice(0, 40)} (${String(f.uri).split(":")[0]})` };
   },
 });
 

@@ -32,7 +32,10 @@ app.emkay.ai/build.json ──────────────────�
    one `skills.json`, with names, descriptions and example phrases per
    language, PyPI version, licence and a *tier*. The store only looks at
    tier 1 (*Looks Complete*: a manifest, on PyPI, a release or in OVOS' own
-   store), on PyPI and not archived.
+   store), on PyPI and not archived. One exception: OCP's MediaProviders from
+   OpenVoiceOS itself, which are tier 2 only because they have no GitHub
+   release yet (alphas on PyPI); they replace the old OCP search skills
+   (`taken()` in `tools/candidates.py`).
 2. **What to test next** (`tools/candidates.py`): never tested first, then a
    new PyPI version, then the ones tested longest ago (after 30 days).
    Packages the device already ships are skipped; so are verdicts written by
@@ -116,6 +119,7 @@ settings) and then used by Emkay's own code, not called directly.
 | Language detection | chosen as `language.detection_module`: works if an English and a Danish sentence are detected as `en` and `da` |
 | Solver | loaded by ovos-plugin-manager as a persona or common query skill loads it: works if the answer to "What is the capital of France?" has "Paris" in it |
 | Pipeline | Emkay places it in the pipeline and ovos-core loads it right after the install (see below): works if it is loaded and placed, "what time is it" is still answered, and it matches one of its own example phrases (ovos-core's "<plugin> match" log line). Without examples it stays `untested` |
+| Media provider | OCP's MediaProviders (`opm.media.provider`, klondike's "Provider Plugin" named `*-media-provider-*`), which replace the old OCP search skills. Emkay loads a new one into the running OCP right after the install: works if OCP has it and OCP's own provider search finds something with a playable address for its examples or for "news", "jazz", "radio" or "music". Finding nothing (it may need setting up) leaves it `untested`. Listed under Music |
 
 A plugin that needs an API key (klondike's `requires_api_key`) is installed
 and loaded but cannot be tried: `untested`, "needs an API key to try". So is
