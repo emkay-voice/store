@@ -11,8 +11,23 @@
 // app.emkay.ai/?install=<package> in this browser - where the user's Emkay
 // lives - and Emkay opens its control panel at that package, where the
 // panel's own Install button (and its own "are you sure?") does the rest.
+// If Emkay already runs in another tab, that tab gets it (app.js asks its
+// own tabs first). Shown inside Emkay (menu → Skill store: a frame with
+// ?in=emkay), "Get" posts the package to that Emkay instead.
 
 const APP = "https://app.emkay.ai/";
+const IN_EMKAY = window.parent !== window && new URLSearchParams(location.search).get("in") === "emkay";
+
+// inside Emkay: "Get" goes to the Emkay around this frame, not a new tab
+if (IN_EMKAY) {
+  document.addEventListener("click", (e) => {
+    const get = e.target.closest("[data-get]");
+    if (!get) return;
+    e.preventDefault();
+    const pkg = new URL(get.href).searchParams.get("install");
+    window.parent.postMessage({ emkayInstall: pkg }, new URL(APP).origin);
+  }, true);
+}
 const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
 
@@ -23,6 +38,8 @@ const byPackage = Object.fromEntries(skills.map((s) => [s.package, s]));
 // ------------------------------------------------------------ language
 /** The visitor's language among the store's: saved choice, else the browser's. */
 function pickLang() {
+  const asked = new URLSearchParams(location.search).get("lang")?.toLowerCase();   // Emkay's language, from Emkay
+  if (asked && texts[asked]) return asked;
   const saved = localStorage.getItem("emkay-store-lang");
   if (saved && texts[saved]) return saved;
   for (const want of navigator.languages || [navigator.language]) {
