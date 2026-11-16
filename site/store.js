@@ -27,6 +27,14 @@ if (IN_EMKAY) {
     const pkg = new URL(get.href).searchParams.get("install");
     window.parent.postMessage({ emkayInstall: pkg }, new URL(APP).origin);
   }, true);
+  // the header's "Open Emkay" becomes "Back to Emkay": it closes the store
+  // frame instead of opening a second Emkay
+  const back = document.querySelector(".open-emkay");
+  back.dataset.t = "back_to_emkay";
+  back.addEventListener("click", (e) => {
+    e.preventDefault();
+    window.parent.postMessage({ emkayClose: true }, new URL(APP).origin);
+  });
 }
 const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
