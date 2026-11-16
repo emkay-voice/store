@@ -1,0 +1,7 @@
+{
+ "_doc": "Requirements the nightly test saw fail with 'has no pure-Python wheel' (tools/test_skills.mjs adds them to 'wanted'); tools/build_wheels.py builds each from its PyPI sdist and publishes it in site/wheels/ when the result is pure Python. 'not_pure': tried, and they need compiling; not tried again (remove an entry to retry it).",
+ "wanted": [
+  "nested-lookup<1.0,>=0.2"
+ ],
+ "not_pure": {}
+}

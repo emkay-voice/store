@@ -15,6 +15,7 @@ import { readFileSync, rmSync, writeFileSync } from "fs";
 const candidates = JSON.parse(readFileSync(process.argv[2], "utf8"));
 const app = process.argv[3] || "https://app.emkay.ai/";
 const COMPAT = new URL("../data/compat.json", import.meta.url);
+const WHEELS = new URL("../data/wheels.json", import.meta.url);
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const t0 = Date.now();
 const log = (m) => console.log(`[${((Date.now() - t0) / 1000).toFixed(0)}s] ${m}`);
@@ -421,5 +422,16 @@ for (const c of candidates) {
   log(`  -> ${result.status}${result.reason ? `: ${result.reason}` : ""}`);
   if (result.reason.startsWith("test did not finish")) continue;   // tried again next night
   compat[c.package] = { ...result, kind: c.kind || "skill", version: c.version, tested: today };
+  // a pure-Python package PyPI only has as source: tools/build_wheels.py
+  // builds it at the next store build, and the skill is tried again then
+  const sdistOnly = result.reason.match(/ERROR: (\S+) has no pure-Python wheel/)?.[1];
+  if (sdistOnly) {
+    const wheels = JSON.parse(readFileSync(WHEELS, "utf8"));
+    if (!wheels.wanted.includes(sdistOnly) && !(sdistOnly in (wheels.not_pure || {}))) {
+      wheels.wanted.push(sdistOnly);
+      writeFileSync(WHEELS, JSON.stringify(wheels, null, 1) + "\n");
+      log(`  ${sdistOnly}: wanted as a wheel (tools/build_wheels.py)`);
+    }
+  }
   writeFileSync(COMPAT, JSON.stringify(compat, null, 1) + "\n");   // after each, so a crash keeps the rest
 }

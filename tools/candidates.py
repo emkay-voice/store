@@ -18,6 +18,7 @@ Usage: python tools/candidates.py [--max N]
 import argparse
 import datetime
 import json
+import re
 import sys
 
 from build import EMKAY, KLONDIKE, REPO, load, norm
@@ -56,6 +57,10 @@ def main():
     compat = {norm(k): v for k, v in json.loads((REPO / "data/compat.json").read_text()).items()
               if not k.startswith("_")}
     today = datetime.date.today()
+    try:   # the wheels the store built (tools/build_wheels.py)
+        built = set(load("https://store.emkay.ai/wheels/index.json"))
+    except Exception:
+        built = set()
     picks, seen = [], set()
     for s in load(KLONDIKE):
         pkg = s.get("package_name")
@@ -74,6 +79,9 @@ def main():
             continue                       # written by hand
         elif c.get("version") != version:
             rank = (1, 0)
+        elif norm((re.search(r"ERROR: ([A-Za-z0-9._-]+)", c.get("reason", "")) or [None, ""])[1]) in built \
+                and "no pure-Python wheel" in c.get("reason", ""):
+            rank = (1, 0)      # it lacked a wheel the store has built since
         else:
             age = (today - datetime.date.fromisoformat(c["tested"])).days
             if age <= RETEST_DAYS:

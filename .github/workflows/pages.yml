@@ -26,6 +26,12 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.13"
+      # pure-Python packages PyPI only has as source, as wheels for Emkay's
+      # pip (tools/build_wheels.py, data/wheels.json)
+      - name: Build the missing wheels
+        run: |
+          pip install -q packaging
+          python tools/build_wheels.py
       - name: Build the store
         run: python tools/build.py
       - uses: actions/upload-pages-artifact@v3
