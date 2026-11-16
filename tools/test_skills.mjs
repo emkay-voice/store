@@ -381,10 +381,17 @@ async function testOne(c) {
     let note = "";
     if (/plain OVOS package name/.test(job.detail || "")) {
       note = "the settings panel only installs packages named ovos-*";
+    } else if (/does not have a package|PyPI does not have/.test(job.detail || "")) {
+      // the store's own index leaves out what was found broken, so a retest
+      // (a fix released upstream) cannot go through the panel
+      note = "not in the store's package index (it was broken before)";
     } else if (/not one of the OVOS plugin families/.test(job.detail || "")) {
       // a family the panel does not know yet (ovos_webui pypi.FAMILIES),
       // e.g. ovos-media-provider-* until OpenVoiceOS/ovos-control-panel#104
       note = "the settings panel does not install this kind of plugin yet";
+    } else if (!job.id) {
+      // the panel itself failed (not pip): try the package anyway, and say so
+      note = `the settings panel failed: ${String(job.detail || job.raw || "no answer").split("\n").pop().slice(0, 120)}`;
     }
     if (note) {
       // ask ovos-core's installer on the bus, as the panel itself does, so
