@@ -39,7 +39,10 @@ app.emkay.ai/build.json ──────────────────�
 2. **What to test next** (`tools/candidates.py`): never tested first, then a
    new PyPI version, then the ones tested longest ago (after 30 days).
    Packages the device already ships are skipped; so are verdicts written by
-   hand (see *Overrides*).
+   hand (see *Overrides*). To test some packages now, whatever their turn
+   (say, right after an upstream fix is released), run the workflow by hand
+   with `packages` (comma-separated); their version is then read from PyPI,
+   since klondike crawls once a night.
 3. **The test** (`tools/test_skills.mjs`, workflow
    [`test-skills.yml`](../.github/workflows/test-skills.yml), nightly). For each
    candidate it opens the live Emkay in headless Chrome with a fresh profile

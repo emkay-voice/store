@@ -11,6 +11,9 @@ on:
       max:
         description: "How many skills to try"
         default: "8"
+      packages:
+        description: "Only these packages, comma-separated, whatever their turn"
+        default: ""
   schedule:
     - cron: "17 2 * * *"   # after Emkay's nightly build, before the store's
 
@@ -35,7 +38,7 @@ jobs:
         with:
           node-version: "22"
       - name: Pick the skills to try
-        run: python tools/candidates.py --max "${{ inputs.max || '8' }}" > candidates.json
+        run: python tools/candidates.py --max "${{ inputs.max || '8' }}" --only "${{ inputs.packages }}" > candidates.json
       - name: Install and try each one
         run: CHROME="$(command -v google-chrome || command -v chromium)" node tools/test_skills.mjs candidates.json
       - name: Commit the results

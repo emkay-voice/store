@@ -71,7 +71,11 @@ def english_examples(s) -> list:
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--max", type=int, default=8)
+    ap.add_argument("--only", default="",
+                    help="comma-separated packages to test now, whatever their turn "
+                         "(e.g. right after an upstream fix is released)")
     args = ap.parse_args()
+    only = {norm(p) for p in args.only.split(",") if p.strip()}
     try:
         builtin = {norm(v.split("==")[0]) for v in load(EMKAY).get("versions", [])}
     except Exception as e:
@@ -96,7 +100,15 @@ def main():
         seen.add(key)
         c = compat.get(key)
         version = s.get("pypi_version") or ""
-        if c is None:
+        if only:
+            if key not in only:
+                continue
+            try:   # klondike crawls nightly; a release from today is newer
+                version = load(f"https://pypi.org/pypi/{pkg}/json")["info"]["version"]
+            except Exception:
+                pass
+            rank = (0, 0)
+        elif c is None:
             rank = (0, 0)
         elif "tested" not in c:
             continue                       # written by hand
