@@ -46,7 +46,8 @@ LANGS = ["en-us", "da-dk", "de-de", "fr-fr", "it-it", "es-es", "gl-es", "ca-es",
 
 
 #: the store shelf for each plugin kind the test can try
-PLUGIN_CATEGORIES = {"tts": "voices", "stt": "listening"}
+PLUGIN_CATEGORIES = {"tts": "voices", "stt": "listening", "translate": "language",
+                     "lang_detect": "language", "solver": "answers", "pipeline": "pipelines"}
 
 
 def load(source: str):
@@ -228,7 +229,7 @@ def main():
     (SITE / "build.json").write_text(json.dumps({
         "built": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
         "skills": len(skills),
-        "categories": rules["order"] + ["other"] + list(PLUGIN_CATEGORIES.values()),
+        "categories": rules["order"] + ["other"] + list(dict.fromkeys(PLUGIN_CATEGORIES.values())),
         "langs": LANGS,
         "featured": pick_featured([x for x in skills if x["kind"] == "skill"], feat_rules),
         "emkay": {k: emkay.get(k) for k in ("version", "build", "commit")},

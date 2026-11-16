@@ -26,7 +26,9 @@ RETEST_DAYS = 30
 
 #: the plugin types the test can try, by klondike's component_type; more
 #: come as their checks are written (see tools/test_skills.mjs, CHECKS)
-PLUGIN_KINDS = {"TTS Plugin": "tts", "STT Plugin": "stt"}
+PLUGIN_KINDS = {"TTS Plugin": "tts", "STT Plugin": "stt", "Translate Plugin": "translate",
+                "Detect Plugin": "lang_detect", "Solver Plugin": "solver",
+                "Pipeline Plugin": "pipeline"}
 
 
 def kind_of(s):
@@ -80,7 +82,7 @@ def main():
         picks.append((rank, -(s.get("stars") or 0), {
             "package": pkg, "version": version, "skill_id": s.get("skill_id") or "",
             "kind": kind, "api_key": bool(s.get("requires_api_key")),
-            "examples": english_examples(s) if kind == "skill" else []}))
+            "examples": english_examples(s) if kind in ("skill", "pipeline") else []}))
     picks.sort(key=lambda p: (p[0], p[1]))
     out = [p[2] for p in picks[:args.max]]
     print(f"{len(picks)} skills want a test; trying {len(out)}", file=sys.stderr)

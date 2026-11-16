@@ -126,7 +126,28 @@ function why(lines, fallback) {
 /** The plugin ids an installed package registers for `kind` (its entry points). */
 const pluginIds = (pkg, kind) => `import json
 from importlib.metadata import distribution
-json.dumps([ep.name for ep in distribution(${JSON.stringify(pkg)}).entry_points if ep.group == "opm.${kind}"])`;
+json.dumps([ep.name for ep in distribution(${JSON.stringify(pkg)}).entry_points if ep.group in ${JSON.stringify(GROUPS[kind])}])`;
+
+/** The entry point groups of each kind (ovos-plugin-manager's PluginTypes, and the old names it still reads). */
+const GROUPS = {
+  tts: ["opm.tts", "mycroft.plugin.tts"], stt: ["opm.stt", "mycroft.plugin.stt"],
+  translate: ["opm.lang.translate", "neon.plugin.lang.translate"],
+  lang_detect: ["opm.lang.detect", "neon.plugin.lang.detect"],
+  solver: ["opm.solver.question", "neon.plugin.solver"], pipeline: ["opm.pipeline"],
+};
+
+/** Choose `id` in the `language` section, as OVOS' translation and detection factories read it. */
+const chooseLanguage = (key, id) => `from emkay_mobile import boot
+from ovos_config import Configuration
+boot.write_user_config({"language": {${JSON.stringify(key)}: ${JSON.stringify(id)}}})
+Configuration.reload()
+"ok"`;
+
+/** Python's result through Emkay's own (callPromising) path, or {error}. */
+async function run(b, code) {
+  const out = await b.pyAsync(code);
+  return String(out).startsWith("ERR ") ? { error: String(out).slice(4) } : { value: String(out) };
+}
 
 /** Choose `id` as the `kind` plugin, as the panel's voice settings do. */
 const choose = (kind, id) => `from emkay_mobile import boot, speech
@@ -183,6 +204,68 @@ hand_over(lambda: boot.emit("speak", {"utterance": "Hello, this is a test of the
       : `heard nothing: ${why(b.workerLog.slice(-40), "no text")}` };
   },
 };
+Object.assign(CHECKS, {
+  /** "good morning" from English to Danish, through OVOS' translation factory. */
+  async translate(b, id) {
+    await b.py(chooseLanguage("translation_module", id));
+    const r = await run(b, `from ovos_plugin_manager.language import OVOSLangTranslationFactory
+OVOSLangTranslationFactory.create().translate("good morning", target="da", source="en")`);
+    if (r.error) return { ok: false, reason: r.error };
+    const text = r.value.trim();
+    return text && text.toLowerCase() !== "good morning" ? { ok: true, note: `"good morning" -> "${text}"` }
+      : { ok: false, reason: `"good morning" came back as "${text}"` };
+  },
+  /** An English and a Danish sentence, through OVOS' detection factory. */
+  async lang_detect(b, id) {
+    await b.py(chooseLanguage("detection_module", id));
+    const r = await run(b, `import json
+from ovos_plugin_manager.language import OVOSLangDetectionFactory
+d = OVOSLangDetectionFactory.create()
+json.dumps([d.detect("what time is it in London"), d.detect("hvad er klokken i København")])`);
+    if (r.error) return { ok: false, reason: r.error };
+    const [en, da] = JSON.parse(r.value).map((l) => String(l).toLowerCase());
+    return en.startsWith("en") && da.startsWith("da") ? { ok: true, note: `en -> ${en}, da -> ${da}` }
+      : { ok: false, reason: `detected ${en} for English and ${da} for Danish` };
+  },
+  /** "What is the capital of France?"; ovos-plugin-manager loads the solver,
+   *  as a persona or common query skill does. */
+  async solver(b, id) {
+    const r = await run(b, `from ovos_plugin_manager.solvers import load_question_solver_plugin
+load_question_solver_plugin(${JSON.stringify(id)})().spoken_answer("What is the capital of France?", lang="en") or ""`);
+    if (r.error) return { ok: false, reason: r.error };
+    return /paris/i.test(r.value) ? { ok: true, note: r.value.slice(0, 80) }
+      : { ok: false, reason: r.value ? `answered "${r.value.slice(0, 80)}"` : "gave no answer" };
+  },
+  /** Emkay places a new pipeline plugin and has ovos-core load it right after
+   *  the install (pipeline_place.py). It works if it is there, Emkay still
+   *  answers "what time is it", and it matches one of its own examples. */
+  async pipeline(b, id, c) {
+    const st = JSON.parse(await b.py(`import json
+from emkay_mobile import boot
+from ovos_config import Configuration
+json.dumps({"placed": [p for p in Configuration()["intents"]["pipeline"] if p == ${JSON.stringify(id)} or p.startswith(${JSON.stringify(id + "-")})],
+            "loaded": ${JSON.stringify(id)} in boot._manager.intents.pipeline_plugins})`));
+    if (!st.loaded) return { ok: false, reason: `installs, but ovos-core did not load it: ${why(b.workerLog.slice(-40), "no error logged")}` };
+    if (!st.placed.length) return { ok: false, reason: "loads, but has no stage Emkay could place in the pipeline" };
+    let mark = b.workerLog.length;
+    await b.js(`window.emkay.call("say", {text: "what time is it"}); true`);
+    await sleep(15000);
+    if (!b.workerLog.slice(mark).some((l) => /date-time.*what_t|time.*skill.*match|\bmatch\b.*time/i.test(l))) {
+      return { ok: false, reason: `with ${st.placed.join(", ")} in the pipeline, "what time is it" is not answered` };
+    }
+    for (const ex of c.examples) {
+      mark = b.workerLog.length;
+      await b.js(`window.emkay.call("say", {text: ${JSON.stringify(ex)}}); true`);
+      await sleep(15000);
+      if (b.workerLog.slice(mark).some((l) => l.includes(`${id}`) && /\bmatch\b/.test(l))) {
+        return { ok: true, note: `placed as ${st.placed.join(", ")}; matched "${ex}"` };
+      }
+    }
+    return { ok: null, reason: `placed as ${st.placed.join(", ")} and Emkay still answers, ` +
+      (c.examples.length ? "but it matched none of its own examples" : "but it has no examples to try") };
+  },
+});
+
 const TEST_WAV = "https://raw.githubusercontent.com/emkay-voice/emkay/main/tools/probes/audio/what_time.wav";
 
 /** Check one installed plugin package; returns {status, reason}. */
@@ -191,9 +274,10 @@ async function checkPlugin(b, c, pkg) {
   if (!ids.length) return { status: "broken", reason: `installs, but registers no ${c.kind} plugin` };
   log(`  ${c.kind} plugin ${ids[0]}`);
   if (c.api_key) return { status: "untested", reason: "installs; needs an API key to try" };
-  const r = await CHECKS[c.kind](b, ids[0]);
+  const r = await CHECKS[c.kind](b, ids[0], c);
   log(`  ${r.ok ? "passed" : "failed"}: ${r.note || r.reason}`);
   if (r.ok) return { status: "works", reason: "", note: r.note };
+  if (r.ok === null) return { status: "untested", reason: r.reason };
   // a plugin that wants a server address or a key first is not broken: it
   // needs setting up, which a test cannot do for the user
   if (/missing from .*config|not configured|no (api[ _-]?)?key|api[ _-]?key|requires? (an? )?(url|host|server)/i.test(r.reason)) {

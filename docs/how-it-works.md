@@ -112,9 +112,17 @@ settings) and then used by Emkay's own code, not called directly.
 |---|---|
 | TTS | Emkay speaks "Hello, this is a test of the voice." with it: works if half a second or more of speech came from this plugin, not from the fallback TTS |
 | STT | a recording of "what time is it" goes through Emkay's own path for recorded speech: works if the text has "time" in it |
+| Translate | chosen as `language.translation_module`, OVOS' translation factory turns "good morning" from English into Danish: works if something other than "good morning" comes back |
+| Language detection | chosen as `language.detection_module`: works if an English and a Danish sentence are detected as `en` and `da` |
+| Solver | loaded by ovos-plugin-manager as a persona or common query skill loads it: works if the answer to "What is the capital of France?" has "Paris" in it |
+| Pipeline | Emkay places it in the pipeline and ovos-core loads it right after the install (see below): works if it is loaded and placed, "what time is it" is still answered, and it matches one of its own example phrases (ovos-core's "<plugin> match" log line). Without examples it stays `untested` |
 
 A plugin that needs an API key (klondike's `requires_api_key`) is installed
-and loaded but cannot be tried: `untested`, "needs an API key to try". The
+and loaded but cannot be tried: `untested`, "needs an API key to try". So is
+one that fails because it wants a server address or key in its config first:
+`untested`, "needs to be set up first". Anything else that fails is `broken`,
+with the reason in plain words where the cause is known ("it opens its own
+network connection, which a browser does not allow"). The
 checks are `CHECKS` in `tools/test_skills.mjs`, and the kinds tried are
 `PLUGIN_KINDS` in `tools/candidates.py`; a kind joins when its check is written.
 
@@ -144,8 +152,8 @@ overwrites or retries them.
 
 ## Planned
 
-- **More plugin kinds**: translate, language detection, solvers, pipelines,
-  transformers, VAD and wake words, each with its own check (see *Plugins*).
+- **More plugin kinds**: transformers, VAD and wake words, each with its own
+  check (see *Plugins*).
   Plugins for hardware, media backends, microphones and GUIs make no sense in
   a browser and are left out.
 - **"Works for me" / "Doesn't work"** buttons in the store that open a
