@@ -10,7 +10,7 @@
 // decide another's result. Only Emkay's public page is used: nothing here
 // needs to be built first.
 import { spawn } from "child_process";
-import { readFileSync, writeFileSync } from "fs";
+import { readFileSync, rmSync, writeFileSync } from "fs";
 
 const candidates = JSON.parse(readFileSync(process.argv[2], "utf8"));
 const app = process.argv[3] || "https://app.emkay.ai/";
@@ -22,6 +22,9 @@ const log = (m) => console.log(`[${((Date.now() - t0) / 1000).toFixed(0)}s] ${m}
 /** One browser, one page, CDP helpers; worker console lines are kept. */
 async function browser(name) {
   const port = 9400 + Math.floor(Math.random() * 400);
+  // a profile left by an earlier run keeps its Emkay (its panel token, its
+  // installed skills): every test starts from nothing, as a new user does
+  rmSync(`/tmp/emkay-test-${name}`, { recursive: true, force: true });
   const chrome = spawn(process.env.CHROME, [
     "--headless=new", `--remote-debugging-port=${port}`, `--user-data-dir=/tmp/emkay-test-${name}`,
     "--window-size=390,844", "--autoplay-policy=no-user-gesture-required", "--no-first-run",
@@ -66,8 +69,11 @@ async function browser(name) {
     throw new Error(`timed out waiting for ${what}`);
   };
   const py = (code) => js(`window.emkay.call("python", {code: ${JSON.stringify(code)}})`);
+  // as Emkay's own commands run (callPromising): what is started from here
+  // may wait (JSPI), as speech does when a skill speaks
+  const pyAsync = (code) => js(`window.emkay.call("python_async", {code: ${JSON.stringify(code)}}).catch((e) => "ERR " + e.message)`);
   const close = () => { ws.close(); chrome.kill(); };
-  return { send, js, until, py, close, workerLog };
+  return { send, js, until, py, pyAsync, close, workerLog };
 }
 
 const SKILLS = "import json; from emkay_mobile import boot; json.dumps(sorted(boot._manager.plugin_skills))";
@@ -81,6 +87,15 @@ const answeredBy = (sid) => `import builtins, json
 hits = [s for s in builtins._emkay_seen if ('"speak"' in s or 'skill.handler.start' in s) and ${JSON.stringify(sid)} in s]
 builtins._emkay_seen.clear()
 json.dumps(len(hits))`;
+
+/** Known browser limits, said plainly ("ClientConnectorDNSError(ConnectionKey(host='x'..." is not). */
+function plain(reason) {
+  const host = reason.match(/host='([^']+)'/)?.[1];
+  if (/ClientConnector|aiohttp|socket\.gaierror|OSError: \[Errno 50\]|websocket/i.test(reason)) {
+    return `it opens its own network connection${host ? ` (to ${host})` : ""}, which a browser does not allow`;
+  }
+  return reason.replace(/\(ConnectionKey\(.*$/, "").slice(0, 200);
+}
 
 /** Lines that say why a skill did not install or load. */
 function why(lines, fallback) {
@@ -122,7 +137,7 @@ const CHECKS = {
   async tts(b, id) {
     await b.py(choose("tts", id));
     const mark = b.workerLog.length;
-    await b.py(`from emkay_mobile import boot
+    await b.pyAsync(`from emkay_mobile import boot
 from emkay_mobile.browser import hand_over
 hand_over(lambda: boot.emit("speak", {"utterance": "Hello, this is a test of the voice.", "lang": "en-US"}))
 "ok"`);
@@ -174,7 +189,7 @@ async function checkPlugin(b, c, pkg) {
   if (c.api_key) return { status: "untested", reason: "installs; needs an API key to try" };
   const r = await CHECKS[c.kind](b, ids[0]);
   log(`  ${r.ok ? "passed" : "failed"}: ${r.note || r.reason}`);
-  return r.ok ? { status: "works", reason: "", note: r.note } : { status: "broken", reason: `does not work here: ${r.reason}` };
+  return r.ok ? { status: "works", reason: "", note: r.note } : { status: "broken", reason: `does not work here: ${plain(r.reason)}` };
 }
 
 /** Install, load and ask one skill; returns {status, reason}. */
@@ -207,6 +222,7 @@ async function testOne(c) {
 
     // PyPI's normalized form: the panel takes no underscores (ovos_tts_plugin_marytts)
     const pkgName = c.package.toLowerCase().replace(/[-_.]+/g, "-");
+    await b.py(COLLECT);   // the bus from here on: ovos-core's failure message has pip's own output
     const job = await api("POST", "/api/plugins/install", { package: pkgName });
     let state = job;
     let panel = true;
@@ -216,7 +232,6 @@ async function testOne(c) {
       // panel itself does, so the skill is still tried
       panel = false;
       log("  the panel refuses the name; installing through ovos-core's installer");
-      await b.py(COLLECT);
       await b.py(`from emkay_mobile import boot
 from emkay_mobile.browser import hand_over
 from ovos_bus_client.message import Message
@@ -238,8 +253,14 @@ json.dumps({"state": ("done" if "complete" in done[-1] else "failed") if done el
     }
     const note = panel ? "" : "the settings panel only installs packages named ovos-*";
     const result = (r) => ({ ...r, reason: [r.reason, note].filter(Boolean).join("; "), panel });
+    if (state.state !== "done" && panel) {
+      // the panel's job says only "error in pip subprocess"; pip's output is
+      // in ovos-core's ovos.pip.install.failed message
+      const failed = await b.py(`import builtins
+[s for s in builtins._emkay_seen if '"ovos.pip.install.failed"' in s][-1:] and [s for s in builtins._emkay_seen if '"ovos.pip.install.failed"' in s][-1] or ""`);
+      if (failed) state.lines = [failed];
+    }
     if (state.state !== "done") {
-      log(`  install answer: ${JSON.stringify(state).slice(-1500)}`);
       return result({ status: "broken", reason: `does not install: ${why(state.lines || [], JSON.stringify(state).slice(0, 120))}` });
     }
     await sleep(8000);
