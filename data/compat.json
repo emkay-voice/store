@@ -263,5 +263,69 @@
   "kind": "media_provider",
   "version": "0.0.1a5",
   "tested": "2026-11-16"
+ },
+ "ovos-switchboard-pipeline-plugin": {
+  "status": "untested",
+  "reason": "placed as ovos-switchboard-classifier-pipeline-plugin and Emkay still answers, but it has no examples to try",
+  "panel": true,
+  "kind": "pipeline",
+  "version": "1.1.2",
+  "tested": "2026-11-17"
+ },
+ "ovos-good-manners-pipeline-plugin": {
+  "status": "untested",
+  "reason": "placed as ovos-good-manners-pipeline-plugin and Emkay still answers, but it matched none of its own examples",
+  "panel": true,
+  "kind": "pipeline",
+  "version": "0.0.2",
+  "tested": "2026-11-17"
+ },
+ "ovos-translate-plugin-nllb": {
+  "status": "broken",
+  "reason": "does not install: ERROR: ctranslate2 has no pure-Python wheel (only source or compiled builds), so it cannot be installed in the browser",
+  "panel": true,
+  "kind": "translate",
+  "version": "0.0.1",
+  "tested": "2026-11-17"
+ },
+ "ovos_tts_plugin_marytts": {
+  "status": "untested",
+  "reason": "needs to be set up first: ValueError(\"'url' missing from MaryTTS plugin config\")",
+  "panel": true,
+  "kind": "tts",
+  "version": "0.1.0",
+  "tested": "2026-11-17"
+ },
+ "ovos-skill-365tomorrows-stories": {
+  "status": "untested",
+  "reason": "loads, but did not answer its own examples here",
+  "panel": true,
+  "kind": "skill",
+  "version": "0.1.8",
+  "tested": "2026-11-17"
+ },
+ "ovos-skill-andrew-lang-tales": {
+  "status": "works",
+  "reason": "",
+  "panel": true,
+  "kind": "skill",
+  "version": "0.1.9",
+  "tested": "2026-11-17"
+ },
+ "ovos-skill-arxiv-papers": {
+  "status": "untested",
+  "reason": "loads, but did not answer its own examples here",
+  "panel": true,
+  "kind": "skill",
+  "version": "0.1.7",
+  "tested": "2026-11-17"
+ },
+ "ovos-skill-bechstein-tales": {
+  "status": "untested",
+  "reason": "loads; it has no examples to try",
+  "panel": true,
+  "kind": "skill",
+  "version": "0.1.7",
+  "tested": "2026-11-17"
  }
 }
