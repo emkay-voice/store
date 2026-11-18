@@ -40,12 +40,12 @@
   "tested": "2026-11-15"
  },
  "skill-homeassistant": {
-  "status": "broken",
-  "reason": "does not install: {\"raw\":\"[object Object]\"}",
-  "panel": true,
+  "status": "works",
+  "reason": "the settings panel only installs packages named ovos-*",
+  "panel": false,
   "kind": "skill",
   "version": "1.4.7",
-  "tested": "2026-11-16"
+  "tested": "2026-11-18"
  },
  "neon-skill-alerts": {
   "status": "broken",
@@ -135,12 +135,13 @@
   "tested": "2026-11-16"
  },
  "ovos-stt-plugin-onnx-asr": {
-  "status": "broken",
-  "reason": "does not work here: heard \"[object Object]\" for \"what time is it\"",
-  "panel": true,
+  "status": "works",
+  "reason": "the settings panel failed: ",
+  "note": "heard \"What time is it?\"",
+  "panel": false,
   "kind": "stt",
   "version": "0.0.1",
-  "tested": "2026-11-16"
+  "tested": "2026-11-18"
  },
  "ovos-tts-plugin-coqui": {
   "status": "broken",
@@ -265,12 +266,13 @@
   "tested": "2026-11-16"
  },
  "ovos-switchboard-pipeline-plugin": {
-  "status": "untested",
-  "reason": "placed as ovos-switchboard-classifier-pipeline-plugin and Emkay still answers, but it has no examples to try",
+  "status": "works",
+  "reason": "",
+  "note": "placed as ovos-switchboard-classifier-pipeline-plugin; Emkay still answers; it has no examples of its own",
   "panel": true,
   "kind": "pipeline",
   "version": "1.1.2",
-  "tested": "2026-11-17"
+  "tested": "2026-11-18"
  },
  "ovos-good-manners-pipeline-plugin": {
   "status": "untested",
@@ -302,7 +304,7 @@
   "panel": true,
   "kind": "skill",
   "version": "0.1.8",
-  "tested": "2026-11-17"
+  "tested": "2026-11-18"
  },
  "ovos-skill-andrew-lang-tales": {
   "status": "works",
@@ -321,12 +323,13 @@
   "tested": "2026-11-17"
  },
  "ovos-skill-bechstein-tales": {
-  "status": "untested",
-  "reason": "loads; it has no examples to try",
+  "status": "works",
+  "reason": "",
+  "note": "loads without errors (a common reading provider); it has no examples of its own",
   "panel": true,
   "kind": "skill",
   "version": "0.1.7",
-  "tested": "2026-11-17"
+  "tested": "2026-11-18"
  },
  "ovos-skill-camera": {
   "status": "works",
@@ -337,8 +340,9 @@
   "tested": "2026-11-18"
  },
  "ovos-skill-cosquin-tales": {
-  "status": "untested",
-  "reason": "loads; it has no examples to try",
+  "status": "works",
+  "reason": "",
+  "note": "loads without errors (a common reading provider); it has no examples of its own",
   "panel": true,
   "kind": "skill",
   "version": "0.1.7",
@@ -369,8 +373,9 @@
   "tested": "2026-11-18"
  },
  "ovos-skill-hangup": {
-  "status": "untested",
-  "reason": "loads; it has no examples to try",
+  "status": "works",
+  "reason": "",
+  "note": "loads without errors; it has no examples of its own",
   "panel": true,
   "kind": "skill",
   "version": "1.0.1",
