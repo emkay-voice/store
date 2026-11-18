@@ -51,6 +51,16 @@ app.emkay.ai/build.json ──────────────────�
    new skill loaded, waits for the intents to train, and says the skill's own
    example phrases (from klondike, in English). The skill works if *it*
    answered (its `speak` or handler messages on the bus), not just anything.
+   Providers have no examples of their own: a common reading provider is
+   spoken for by the reading pipeline, a common query skill by the common
+   query pipeline, a media search skill by OCP. For those (klondike's
+   `pipeline` field or `provider` tag, or the skill's OVOS base class) and
+   for any skill without examples, the test is that it loads and keeps to
+   what a browser allows: no refused network read (CORS), no connection of
+   its own, no traceback of its own in the log. A common query skill is also
+   asked a question the way its pipeline does it (`question:query`) and must
+   take part. A skill that has examples and answers none stays `untested`,
+   unless the log shows why (then it is `broken`).
 4. **The verdicts** go into [`data/compat.json`](../data/compat.json), one entry
    per package, with the reason when something fails, taken from pip's or
    OVOS' own error ("No module named 'pwd'", "nested-lookup has no
@@ -64,7 +74,7 @@ app.emkay.ai/build.json ──────────────────�
 | Status | Shown in the store | In the package index | Meaning |
 |---|---|---|---|
 | `builtin` | yes, "Comes with Emkay" | yes | Emkay ships it (from its `build.json`) |
-| `works` | yes, "Works in Emkay" | yes | installed, loaded and answered one of its own examples |
+| `works` | yes, "Works in Emkay" | yes | installed, loaded and answered one of its own examples; a provider or a skill without examples: loaded with nothing a browser refuses |
 | `untested` | yes, after the working ones, never featured | yes, marked "[Not tested in Emkay yet]" | not tried yet, or loads but could not be tried |
 | `broken` | no | no | tried, and does not install or load here |
 
@@ -121,7 +131,7 @@ settings) and then used by Emkay's own code, not called directly.
 | Translate | chosen as `language.translation_module`, OVOS' translation factory turns "good morning" from English into Danish: works if something other than "good morning" comes back |
 | Language detection | chosen as `language.detection_module`: works if an English and a Danish sentence are detected as `en` and `da` |
 | Solver | loaded by ovos-plugin-manager as a persona or common query skill loads it: works if the answer to "What is the capital of France?" has "Paris" in it |
-| Pipeline | Emkay places it in the pipeline and ovos-core loads it right after the install (see below): works if it is loaded and placed, "what time is it" is still answered, and it matches one of its own example phrases (ovos-core's "<plugin> match" log line). Without examples it stays `untested` |
+| Pipeline | Emkay places it in the pipeline and ovos-core loads it right after the install (see below): works if it is loaded and placed, "what time is it" is still answered, and it matches one of its own example phrases (ovos-core's "<plugin> match" log line). Without examples (a classifier, a switchboard) it works if it is placed, "what time is it" is still answered and nothing in the log is refused |
 | Media provider | OCP's MediaProviders (`opm.media.provider`, klondike's "Provider Plugin" named `*-media-provider-*`), which replace the old OCP search skills. Emkay loads a new one into the running OCP right after the install: works if OCP has it and OCP's own provider search finds something with a playable address for its examples or for "news", "jazz", "radio" or "music". Finding nothing (it may need setting up) leaves it `untested`. Listed under Music |
 
 A plugin that needs an API key (klondike's `requires_api_key`) is installed

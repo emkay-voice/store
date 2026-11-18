@@ -77,6 +77,11 @@ async function browser(name) {
   return { send, js, until, py, pyAsync, close, workerLog };
 }
 
+/** How ovos-core's pip install ended, from its bus messages (COLLECT). */
+const PIP_DONE = `import builtins, json
+done = [s for s in builtins._emkay_seen if '"ovos.pip.install.complete"' in s or '"ovos.pip.install.failed"' in s]
+json.dumps({"state": ("done" if "complete" in done[-1] else "failed") if done else "running", "lines": done[-1:]})`;
+
 const SKILLS = "import json; from emkay_mobile import boot; json.dumps(sorted(boot._manager.plugin_skills))";
 // every bus message from here on, for seeing who answered
 const COLLECT = `import builtins
@@ -105,6 +110,42 @@ function plain(reason) {
   }
   return reason.replace(/\(ConnectionKey\(.*$/, "").slice(0, 200);
 }
+
+/** A browser limit the worker log shows since `mark`: a refused network
+ *  read (CORS), an own connection (aiohttp, sockets), or a traceback that
+ *  names `id`. The reason, said plainly, or "". */
+const NET = /NetworkError|CORS|ClientConnector|aiohttp\.|socket\.gaierror|OSError: \[Errno 50\]|websocket.*(fail|error)/i;
+function trouble(b, mark, id) {
+  const lines = b.workerLog.slice(mark);
+  // Emkay's own network complaints from before the install are not the skill's
+  const before = new Set(b.workerLog.slice(0, mark).filter((l) => NET.test(l)).map(plain));
+  const net = lines.find((l) => NET.test(l) && !before.has(plain(l)));
+  if (net) return plain(net);
+  const i = lines.findIndex((l) => /Traceback/.test(l) && lines.slice(lines.indexOf(l), lines.indexOf(l) + 30).some((m) => m.includes(id)));
+  return i < 0 ? "" : `it fails: ${why(lines.slice(i, i + 30), "an error")}`;
+}
+
+/** The kind of provider a loaded skill is, from its class (OVOS' base classes), or "". */
+const providerKind = (sid) => `import json
+from emkay_mobile import boot
+inst = getattr(boot._manager.plugin_skills.get(${JSON.stringify(sid)}), "instance", None)
+names = [c.__name__ for c in type(inst).__mro__] if inst else []
+json.dumps("common query" if "CommonQuerySkill" in names else
+           "media search" if any(n in names for n in ("OVOSCommonPlaybackSkill", "CommonPlaySkill")) else "")`;
+
+/** Ask a common query skill a question the way the common query pipeline
+ *  does (question:query); its question:query.response says it took part. */
+const askCommonQuery = (sid) => `import builtins
+from emkay_mobile import boot
+from emkay_mobile.browser import hand_over
+from ovos_bus_client.message import Message
+builtins._emkay_seen.clear()
+hand_over(lambda: boot.bus().emit(Message("question:query", {"phrase": "what is the capital of france", "lang": "en-us"})))
+"ok"`;
+const commonQueryAnswer = (sid) => `import builtins, json
+hits = [json.loads(s) for s in builtins._emkay_seen if '"question:query.response"' in s and ${JSON.stringify(sid)} in s]
+done = [h for h in hits if not h.get("data", {}).get("searching")]
+json.dumps({"took_part": bool(hits), "answer": (done[-1]["data"].get("answer") or "") if done else ""})`;
 
 /** Lines that say why a skill did not install or load. */
 function why(lines, fallback) {
@@ -203,9 +244,13 @@ hand_over(lambda: boot.emit("speak", {"utterance": "Hello, this is a test of the
         if (id === "data") { data = wav.slice(off + 8, off + 8 + size); break; }
         off += 8 + size + (size % 2);
       }
-      return String(await Promise.race([
+      const v = await Promise.race([
         window.emkay.call("heard", { pcm: data.buffer, rate }, [data.buffer]),
-        new Promise((res) => setTimeout(() => res("TIMEOUT"), 240000))]));
+        new Promise((res) => setTimeout(() => res("TIMEOUT"), 240000))]);
+      // the text, also when it comes back as {text, ...} or a list of them
+      const one = Array.isArray(v) ? v[0] : v;
+      return typeof one === "string" ? one
+        : one == null ? "" : String(one.text ?? one.utterance ?? one.transcript ?? JSON.stringify(one));
     })()`);
     if (text === "TIMEOUT") return { ok: false, reason: "no transcription after 4 minutes" };
     if (/time/i.test(text || "")) return { ok: true, note: `heard "${text}"` };
@@ -280,8 +325,14 @@ json.dumps({"placed": [p for p in Configuration()["intents"]["pipeline"] if p ==
         return { ok: true, note: `placed as ${st.placed.join(", ")}; matched "${ex}"` };
       }
     }
-    return { ok: null, reason: `placed as ${st.placed.join(", ")} and Emkay still answers, ` +
-      (examples.length ? "but it matched none of its own examples" : "but it has no examples to try") };
+    if (examples.length) {
+      return { ok: null, reason: `placed as ${st.placed.join(", ")} and Emkay still answers, but it matched none of its own examples` };
+    }
+    // no examples of its own (a classifier, a switchboard): placed, loaded,
+    // Emkay still answers and nothing a browser refuses is the test
+    const bad = trouble(b, c.installedAt || 0, id);
+    return bad ? { ok: false, reason: bad }
+      : { ok: true, note: `placed as ${st.placed.join(", ")}; Emkay still answers; it has no examples of its own` };
   },
   /** OCP's MediaProviders: Emkay loads a new one into the running OCP right
    *  after the install (pipeline_place.reload_media_providers). It works if
@@ -366,8 +417,11 @@ async function testOne(c) {
     const api = async (method, path, body) => {
       const r = await b.js(`${w}.fetch("${path}", {method: "${method}",
         headers: {"content-type": "application/json"}${body ? `, body: JSON.stringify(${JSON.stringify(body)})` : ""}})
-        .then(async (r) => ({status: r.status, body: await r.text()}))`);
-      try { return JSON.parse(r.body); } catch { return { raw: String(r?.body ?? r).slice(-1500) }; }
+        .then(async (r) => ({status: r.status, body: await r.text()}))
+        .catch((e) => ({status: 0, body: "the request failed: " + e.message}))`);
+      if (!r || typeof r !== "object") return { raw: String(r).slice(-1500) };
+      try { return JSON.parse(r.body); }
+      catch { return { raw: `HTTP ${r.status}: ${String(r.body ?? "").slice(-1500)}` }; }
     };
     await api("POST", "/api/auth/token", { new: "emkay-skill-test" });
     const before = JSON.parse(await b.py(SKILLS));
@@ -375,6 +429,7 @@ async function testOne(c) {
     // PyPI's normalized form: the panel takes no underscores (ovos_tts_plugin_marytts)
     const pkgName = c.package.toLowerCase().replace(/[-_.]+/g, "-");
     await b.py(COLLECT);   // the bus from here on: ovos-core's failure message has pip's own output
+    const installedAt = b.workerLog.length;   // what the log says from here is about this package
     const job = await api("POST", "/api/plugins/install", { package: pkgName });
     let state = job;
     let panel = true;
@@ -406,15 +461,20 @@ hand_over(lambda: boot.bus().emit(Message("ovos.pip.install", {"packages": [${JS
       state = { state: "running" };
       for (let i = 0; i < 120 && state.state === "running"; i++) {
         await sleep(5000);
-        state = JSON.parse(await b.py(`import builtins, json
-done = [s for s in builtins._emkay_seen if '"ovos.pip.install.complete"' in s or '"ovos.pip.install.failed"' in s]
-json.dumps({"state": ("done" if "complete" in done[-1] else "failed") if done else "running", "lines": done[-1:]})`));
+        state = JSON.parse(await b.py(PIP_DONE));
       }
     } else {
-      // the panel's install job: wait for pip to finish
+      // the panel's install job: wait for pip to finish. If the panel stops
+      // answering about its job (an error page, a crash) ovos-core's own
+      // install messages on the bus still say how it ended
       for (let i = 0; i < 120 && job.id && !["done", "failed", "error"].includes(state.state); i++) {
         await sleep(5000);
         state = await api("GET", `/api/plugins/jobs/${job.id}`);
+        if (!state.state) {
+          const bus = JSON.parse(await b.py(PIP_DONE));
+          if (bus.state !== "running") state = bus;
+          else if (state.raw) log(`  the panel's job answer: ${state.raw.slice(0, 160)}`);
+        }
       }
     }
     const result = (r) => ({ ...r, reason: [r.reason, note].filter(Boolean).join("; "), panel });
@@ -429,16 +489,18 @@ json.dumps({"state": ("done" if "complete" in done[-1] else "failed") if done el
       return result({ status: "broken", reason: `does not install: ${why(state.lines || [], JSON.stringify(state).slice(0, 120))}` });
     }
     await sleep(8000);
-    if (c.kind && c.kind !== "skill") return result(await checkPlugin(b, c, pkgName));
+    if (c.kind && c.kind !== "skill") return result(await checkPlugin(b, { ...c, installedAt }, pkgName));
     const added = JSON.parse(await b.py(SKILLS)).filter((s) => !before.includes(s));
     if (!added.length) {
       return result({ status: "broken", reason: `installs, but does not load: ${why(b.workerLog.slice(-60), "no skill appeared")}` });
     }
     const sid = added[0];
     log(`  loaded as ${sid}`);
-    if (!c.examples.length) return result({ status: "untested", reason: "loads; it has no examples to try" });
+    await sleep(45000);   // padatious trains the new intents; a skill reads what it needs at start
+    const provider = JSON.parse(await b.py(providerKind(sid)) || '""')
+      || (c.provider ? "common reading" : "");
+    if (provider) log(`  a ${provider} provider`);
 
-    await sleep(45000);   // padatious trains the new intents
     await b.py(COLLECT);
     let answered = 0;
     for (const ex of c.examples) {
@@ -449,7 +511,31 @@ json.dumps({"state": ("done" if "complete" in done[-1] else "failed") if done el
       if (n) { answered++; break; }   // one is enough
     }
     if (answered) return result({ status: "works", reason: "" });
-    return result({ status: "untested", reason: "loads, but did not answer its own examples here" });
+
+    // what a browser does not allow shows in the log, examples or not
+    const bad = trouble(b, installedAt, sid);
+    if (bad) return result({ status: "broken", reason: `loads, but ${bad}` });
+
+    if (provider === "common query") {
+      // its own way in: the question the common query pipeline asks every such skill
+      await b.py(askCommonQuery(sid));
+      await sleep(20000);
+      const q = JSON.parse(await b.py(commonQueryAnswer(sid)));
+      const bad2 = trouble(b, installedAt, sid);
+      if (bad2) return result({ status: "broken", reason: `loads, but ${bad2}` });
+      if (q.took_part) {
+        return result({ status: "works", reason: "", note: q.answer
+          ? `common query: "${q.answer.slice(0, 80)}"` : "common query: takes part (no answer to the test question)" });
+      }
+    }
+    if (c.examples.length) {
+      return result({ status: "untested", reason: "loads, but did not answer its own examples here" });
+    }
+    // a provider (common reading, common query, media search) or a skill
+    // that only listens for system events has no examples of its own: what
+    // can be checked is that it loads and keeps to what a browser allows
+    return result({ status: "works", reason: "",
+      note: `loads without errors${provider ? ` (a ${provider} provider)` : ""}; it has no examples of its own` });
   } catch (e) {
     return { status: "untested", reason: `test did not finish: ${e.message}` };
   } finally {

@@ -11,7 +11,7 @@ reason the test cannot see, such as CORS for a site the skill only reads
 when asked); those are never retested.
 
 Skills, and the plugin kinds in PLUGIN_KINDS.
-Writes a JSON list of {package, version, skill_id, kind, api_key, examples}
+Writes a JSON list of {package, version, skill_id, kind, api_key, examples, provider}
 to stdout.
 Usage: python tools/candidates.py [--max N]
 """
@@ -24,6 +24,11 @@ import sys
 from build import EMKAY, KLONDIKE, REPO, load, norm
 
 RETEST_DAYS = 30
+
+#: results the test itself got wrong: tried again at the next run, as soon
+#: as the test that wrote them is fixed (no examples was "untested", a
+#: provider has none; an install the panel lost track of said "[object Object]")
+RETEST_REASONS = re.compile(r"has no examples to try|\[object Object\]|\{\"raw\"")
 
 #: the plugin types the test can try, by klondike's component_type; more
 #: come as their checks are written (see tools/test_skills.mjs, CHECKS)
@@ -114,6 +119,8 @@ def main():
             continue                       # written by hand
         elif c.get("version") != version:
             rank = (1, 0)
+        elif RETEST_REASONS.search(c.get("reason", "")):
+            rank = (1, 0)
         elif norm((re.search(r"ERROR: ([A-Za-z0-9._-]+)", c.get("reason", "")) or [None, ""])[1]) in built \
                 and "no pure-Python wheel" in c.get("reason", ""):
             rank = (1, 0)      # it lacked a wheel the store has built since
@@ -125,7 +132,11 @@ def main():
         picks.append((rank, -(s.get("stars") or 0), {
             "package": pkg, "version": version, "skill_id": s.get("skill_id") or "",
             "kind": kind, "api_key": bool(s.get("requires_api_key")),
-            "examples": english_examples(s) if kind in ("skill", "pipeline") else []}))
+            "examples": english_examples(s) if kind in ("skill", "pipeline") else [],
+            # a common reading provider: it has no examples of its own (the
+            # reading pipeline speaks for it); the test also finds common
+            # query and media search providers by their class in Emkay
+            "provider": bool(s.get("pipeline")) or "provider" in (s.get("tags") or [])}))
     picks.sort(key=lambda p: (p[0], p[1]))
     out = [p[2] for p in picks[:args.max]]
     print(f"{len(picks)} skills want a test; trying {len(out)}", file=sys.stderr)
