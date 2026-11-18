@@ -207,5 +207,9 @@
  },
  "descriptions": {
   "skill-homeassistant": "Control Home Assistant by voice: lights, switches, covers, sensors, scenes and scripts, and anything else through Home Assistant's own Assist."
+ },
+ "notes": {
+  "skill-homeassistant": "note.ha_link",
+  "neon-homeassistant-skill": "note.ha_link"
  }
 }
