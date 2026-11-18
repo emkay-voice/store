@@ -327,5 +327,61 @@
   "kind": "skill",
   "version": "0.1.7",
   "tested": "2026-11-17"
+ },
+ "ovos-skill-camera": {
+  "status": "works",
+  "reason": "",
+  "panel": true,
+  "kind": "skill",
+  "version": "1.0.4",
+  "tested": "2026-11-18"
+ },
+ "ovos-skill-cosquin-tales": {
+  "status": "untested",
+  "reason": "loads; it has no examples to try",
+  "panel": true,
+  "kind": "skill",
+  "version": "0.1.7",
+  "tested": "2026-11-18"
+ },
+ "ovos-skill-fart": {
+  "status": "works",
+  "reason": "",
+  "panel": true,
+  "kind": "skill",
+  "version": "1.0.1",
+  "tested": "2026-11-18"
+ },
+ "ovos-skill-geography-practice": {
+  "status": "works",
+  "reason": "",
+  "panel": true,
+  "kind": "skill",
+  "version": "0.0.6",
+  "tested": "2026-11-18"
+ },
+ "ovos-skill-geometry-practice": {
+  "status": "works",
+  "reason": "",
+  "panel": true,
+  "kind": "skill",
+  "version": "0.0.4",
+  "tested": "2026-11-18"
+ },
+ "ovos-skill-hangup": {
+  "status": "untested",
+  "reason": "loads; it has no examples to try",
+  "panel": true,
+  "kind": "skill",
+  "version": "1.0.1",
+  "tested": "2026-11-18"
+ },
+ "ovos-skill-holidays": {
+  "status": "works",
+  "reason": "",
+  "panel": true,
+  "kind": "skill",
+  "version": "0.0.3",
+  "tested": "2026-11-18"
  }
 }
