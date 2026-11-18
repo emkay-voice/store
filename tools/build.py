@@ -182,6 +182,7 @@ def main():
     rules["overrides"] = {norm(k): v for k, v in rules.get("overrides", {}).items()}
     names = {norm(k): v for k, v in rules.get("names", {}).items()}
     descriptions = {norm(k): v for k, v in rules.get("descriptions", {}).items()}
+    notes = {norm(k): v for k, v in rules.get("notes", {}).items()}
     feat_rules = json.loads((REPO / "data/featured.json").read_text())
 
     skills, seen, hidden = [], set(), []
@@ -212,6 +213,9 @@ def main():
             "category": categorize(s, rules) if kind == "skill" else PLUGIN_CATEGORIES[kind],
             "status": status,
             "reason": c.get("reason", ""),
+            # a note on the skill's page: a key of the store's own texts
+            # (locale/), from data/categories.json "notes"
+            "note": notes.get(key, ""),
             "texts": texts_for(s, names, descriptions),
             "languages": sorted({l.lower() for l in s.get("languages") or []}),
             "icon": s.get("icon") if (s.get("icon") or "").startswith("https://") else None,

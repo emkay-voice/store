@@ -230,6 +230,7 @@ function openDetail(s) {
         <div class="dget">${getButton(s)}</div></div></div>
     <div class="tags">${tags(s)}${s.official ? `<span class="tag">${esc(t("official"))}</span>` : ""}</div>
     <p class="desc">${esc(tx.description)}</p>
+    ${s.note ? `<p class="note">${esc(t(s.note))}</p>` : ""}
     ${examples ? `<h4>${esc(t("examples"))}</h4><ul class="say">${examples}</ul>` : ""}
     ${langs ? `<h4>${esc(t("languages"))}</h4><p class="meta">${esc(langs)}</p>` : ""}
     <p class="meta">${esc(s.package)} ${esc(s.version || "")}${s.license ? ` · ${esc(s.license)}` : ""}${s.updated ? ` · ${esc(s.updated)}` : ""}
