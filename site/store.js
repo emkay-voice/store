@@ -62,6 +62,45 @@ let lang = pickLang();
 const t = (key, vars = {}) => (texts[lang]?.[key] ?? texts["en-us"]?.[key] ?? key)
   .replace(/\{(\w+)\}/g, (_, k) => vars[k] ?? "");
 
+// ------------------------------------------------------------ sideways rows
+/** A row that scrolls sideways (featured, categories) gets ‹ › buttons and a
+ *  fade at each edge with more behind it: its scrollbar is hidden, and a mouse
+ *  wheel does not scroll sideways, so without them a desktop visitor neither
+ *  sees there is more nor can get to it. On touch screens the buttons hide and
+ *  the row is swiped. Safe to call again after the row is re-rendered. */
+function sideways(row) {
+  let wrap = row.parentElement;
+  if (!wrap.classList.contains("sideways")) {
+    wrap = document.createElement("div");
+    wrap.className = "sideways";
+    row.before(wrap);
+    wrap.append(row);
+    for (const dir of [-1, 1]) {
+      const b = document.createElement("button");
+      b.type = "button";
+      b.className = `nudge ${dir < 0 ? "prev" : "next"}`;
+      b.dataset.tAria = dir < 0 ? "scroll.prev" : "scroll.next";
+      b.setAttribute("aria-label", t(b.dataset.tAria));
+      b.textContent = dir < 0 ? "‹" : "›";
+      // most of a row's width, so the next cards or chips come into view; the
+      // featured row's scroll snap then lines a card up at the start
+      b.onclick = () => row.scrollBy({ left: dir * row.clientWidth * 0.8, behavior: "smooth" });
+      wrap.append(b);
+    }
+  }
+  const update = () => {
+    const max = row.scrollWidth - row.clientWidth;
+    wrap.classList.toggle("more-left", row.scrollLeft > 2);
+    wrap.classList.toggle("more-right", row.scrollLeft < max - 2);
+  };
+  row.onscroll = update;
+  if (!row.dataset.sideways) {   // the categories row is the same element on every render
+    row.dataset.sideways = "1";
+    new ResizeObserver(update).observe(row);
+  }
+  update();
+}
+
 /** A skill's name, description and examples in the visitor's language, else English. */
 const local = (s) => s.texts[lang] || s.texts["en-us"];
 const speaksMine = (s) => s.languages.includes(lang) || !!s.texts[lang];
@@ -105,6 +144,7 @@ function renderCats(list) {
   const btn = (c, label, n) => `<button type="button" data-cat="${c}" aria-pressed="${state.cat === c}">${esc(label)}<span class="n">${n}</span></button>`;
   $("cats").innerHTML = btn("", t("all"), list.length) + cats.map((c) => btn(c, t(`category.${c}`), counts[c])).join("");
   for (const b of $("cats").querySelectorAll("button")) b.onclick = () => showCategory(b.dataset.cat);
+  sideways($("cats"));
 }
 
 function showCategory(cat) {
@@ -200,6 +240,8 @@ function render() {
             <button class="link" data-cat="${c}">${esc(t("see_all"))}</button></div>
           <div class="tiles">${l.slice(0, 9).map(tile).join("")}</div></div>`).join("");
     for (const b of $("front").querySelectorAll("[data-cat]")) b.onclick = () => showCategory(b.dataset.cat);
+    const heroes = $("front").querySelector(".heroes");
+    if (heroes) sideways(heroes);
   } else {
     const shown = list.filter(matches);
     $("grid").innerHTML = shown.length ? shown.map(card).join("") : `<div class="empty">${esc(t("empty"))}</div>`;

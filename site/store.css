@@ -105,6 +105,27 @@ main { max-width: 1100px; margin: 0 auto; padding: 18px 16px 40px; }
 .heroes { display: grid; grid-auto-flow: column; grid-auto-columns: min(86%, 420px); gap: 16px;
   overflow-x: auto; scroll-snap-type: x mandatory; padding-bottom: 6px; scrollbar-width: none; }
 .heroes::-webkit-scrollbar { display: none; }
+
+/* rows that scroll sideways (store.js sideways()): a fade at an edge with more
+   behind it, and ‹ › buttons for a mouse; on touch screens the row is swiped */
+.sideways { position: relative; --fade: 56px; }
+.sideways > .heroes, .sideways > .cats { --l: 0px; --r: 0px;
+  -webkit-mask-image: linear-gradient(to right, transparent, #000 var(--l), #000 calc(100% - var(--r)), transparent);
+  mask-image: linear-gradient(to right, transparent, #000 var(--l), #000 calc(100% - var(--r)), transparent); }
+.sideways.more-left > :first-child { --l: var(--fade); }
+.sideways.more-right > :first-child { --r: var(--fade); }
+.nudge { position: absolute; top: 50%; z-index: 2; width: 38px; height: 38px; border-radius: 50%;
+  display: none; place-items: center; padding: 0 0 3px; font: inherit; font-size: 26px; line-height: 1;
+  color: var(--fg); background: rgba(16, 22, 30, .92); border: 1px solid var(--line); cursor: pointer;
+  transform: translateY(-50%); box-shadow: 0 4px 14px rgba(0, 0, 0, .5); transition: background .15s, border-color .15s; }
+.nudge:hover, .nudge:focus-visible { background: var(--card-hi); border-color: var(--accent); outline: none; }
+.nudge.prev { left: 6px; }
+.nudge.next { right: 6px; }
+.sideways.more-left > .nudge.prev, .sideways.more-right > .nudge.next { display: grid; }
+/* centred on the chips / cards, not on the rows' padding */
+.cats ~ .nudge { top: calc(50% + 5px); width: 32px; height: 32px; font-size: 22px; }
+.heroes ~ .nudge { top: calc(50% - 3px); }
+@media (hover: none) { .nudge { display: none !important; } }
 .hero { scroll-snap-align: start; border-radius: 26px; padding: 22px; min-height: 250px; display: flex;
   flex-direction: column; gap: 8px; cursor: pointer; box-shadow: 0 10px 30px rgba(0, 0, 0, .45);
   transition: transform .2s; position: relative; overflow: hidden; }

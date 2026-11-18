@@ -239,7 +239,9 @@ def main():
     (SITE / "build.json").write_text(json.dumps({
         "built": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
         "skills": len(skills),
-        "categories": rules["order"] + ["other"] + list(dict.fromkeys(PLUGIN_CATEGORIES.values())),
+        # each once: a plugin kind can share a skill category (media providers
+        # are "music"), and a category listed twice gave two buttons and shelves
+        "categories": list(dict.fromkeys(rules["order"] + ["other"] + list(PLUGIN_CATEGORIES.values()))),
         "langs": LANGS,
         "featured": pick_featured([x for x in skills if x["kind"] == "skill"], feat_rules),
         "emkay": {k: emkay.get(k) for k in ("version", "build", "commit")},
