@@ -222,6 +222,16 @@ function hero(f) {
     <div class="hero-foot">${icon(s, true)}${getButton(s)}</div></article>`;
 }
 
+/** "See the code / make your own": the skill's GitHub repository in VS Code
+ * for the Web, which offers to fork it on the first save – how newcomers learn
+ * from real skills (emkay-voice/store#2). Only for skills whose source is on GitHub. */
+function codeLink(s) {
+  const m = (s.source || "").match(/^https:\/\/github\.com\/([\w.-]+)\/([\w.-]+?)(?:\.git)?\/?$/);
+  if (!m) return "";
+  return `<p><a class="code-btn" href="https://vscode.dev/github/${esc(m[1])}/${esc(m[2])}" target="_blank" rel="noopener">${esc(t("code.own"))}</a></p>
+    <p class="hint">${esc(t("code.own.hint"))}</p>`;
+}
+
 // ------------------------------------------------------------ pages
 function render() {
   const list = visible();
@@ -277,6 +287,7 @@ function openDetail(s) {
     ${langs ? `<h4>${esc(t("languages"))}</h4><p class="meta">${esc(langs)}</p>` : ""}
     <p class="meta">${esc(s.package)} ${esc(s.version || "")}${s.license ? ` · ${esc(s.license)}` : ""}${s.updated ? ` · ${esc(s.updated)}` : ""}
       ${s.source ? ` · <a href="${esc(s.source)}" target="_blank" rel="noopener">${esc(t("source"))}</a>` : ""}</p>
+    ${codeLink(s)}
     ${s.status !== "builtin" ? `<p class="hint">${esc(t("install.hint"))}</p>` : ""}`;
   $("detail").showModal();
   const url = new URL(location);
