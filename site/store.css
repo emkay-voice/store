@@ -84,8 +84,12 @@ main { max-width: 1100px; margin: 0 auto; padding: 18px 16px 40px; }
 .btn.primary { background: var(--accent); color: #fff; }
 .btn.ghost { background: #1f2a37; color: #fff; }
 .hint { color: var(--muted); font-size: 13px; margin: 8px 0 0; }
-/* See the code / make your own (codeLink in store.js) */
-.code-btn { display: inline-block; margin-top: 10px; padding: 8px 16px; border-radius: 99px; background: #1b2430;
+/* The Emkay DEV box (devBox in store.js): folded, and not on small screens */
+.detail details.dev { margin: 16px 0 4px; border: 1px solid #2d3a48; border-radius: 14px; padding: 10px 14px; }
+.detail details.dev summary { cursor: pointer; font-size: 14px; font-weight: 600; color: var(--muted); }
+.detail details.dev[open] summary { color: #fff; }
+@media (max-width: 720px) { .detail details.dev { display: none; } }
+.code-btn { display: inline-block; margin: 10px 8px 0 0; padding: 8px 16px; border-radius: 99px; background: #1b2430;
   border: 1px solid #2d3a48; color: #fff; text-decoration: none; font-size: 14px; }
 .code-btn:hover { background: #253142; }
 /* a note on a skill's page (data/categories.json "notes") */
