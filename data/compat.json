@@ -388,5 +388,70 @@
   "kind": "skill",
   "version": "0.0.3",
   "tested": "2026-11-18"
+ },
+ "ovos-skill-doublecheck": {
+  "status": "works",
+  "reason": "",
+  "note": "loads without errors; it has no examples of its own",
+  "panel": true,
+  "kind": "skill",
+  "version": "1.0.0",
+  "tested": "2026-11-19"
+ },
+ "ovos-skill-intercom": {
+  "status": "broken",
+  "reason": "loads, but it fails: OSError: [Errno 138] Not supported",
+  "panel": true,
+  "kind": "skill",
+  "version": "0.0.7",
+  "tested": "2026-11-19"
+ },
+ "ovos-skill-mark1-ctrl": {
+  "status": "broken",
+  "reason": "loads, but it fails: OSError: [Errno 138] emscripten does not support processes.",
+  "panel": true,
+  "kind": "skill",
+  "version": "0.0.1",
+  "tested": "2026-11-19"
+ },
+ "ovos-skill-math-practice": {
+  "status": "works",
+  "reason": "",
+  "panel": true,
+  "kind": "skill",
+  "version": "0.0.8",
+  "tested": "2026-11-19"
+ },
+ "ovos-skill-metronome": {
+  "status": "works",
+  "reason": "",
+  "panel": true,
+  "kind": "skill",
+  "version": "0.0.5",
+  "tested": "2026-11-19"
+ },
+ "neon-skill-data_controls": {
+  "status": "broken",
+  "reason": "does not install: ERROR: No matching distribution found for ovos-bus-client>=0.0.3,~=0.0; the settings panel only installs packages named ovos-*",
+  "panel": false,
+  "kind": "skill",
+  "version": "2.1.0",
+  "tested": "2026-11-19"
+ },
+ "neon-skill-support_helper": {
+  "status": "broken",
+  "reason": "does not install: ERROR: No matching distribution found for ovos-bus-client>=0.0.3,~=0.0; the settings panel only installs packages named ovos-*",
+  "panel": false,
+  "kind": "skill",
+  "version": "1.3.0",
+  "tested": "2026-11-19"
+ },
+ "ovos-skill-network-scanner": {
+  "status": "works",
+  "reason": "",
+  "panel": true,
+  "kind": "skill",
+  "version": "0.0.2",
+  "tested": "2026-11-19"
  }
 }
