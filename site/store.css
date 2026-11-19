@@ -190,6 +190,8 @@ main { max-width: 1100px; margin: 0 auto; padding: 18px 16px 40px; }
 /* detail: an app page */
 .dhead { display: flex; gap: 16px; align-items: center; margin-bottom: 12px; }
 .dhead h2 { margin: 0 40px 2px 0; }
-.dget { margin-top: 10px; }
+.dget { margin: 20px 0 4px; padding-top: 16px; border-top: 1px solid #2d3a48; }
+.dget .btn.primary { padding: 12px 32px; font-size: 16px; font-weight: 600; }
+@media (max-width: 720px) { .dget .btn.primary { display: block; text-align: center; } }
 .detail .tags { margin: 6px 0 4px; }
 .card .head .pill { align-self: center; }
