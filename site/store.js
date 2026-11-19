@@ -222,14 +222,21 @@ function hero(f) {
     <div class="hero-foot">${icon(s, true)}${getButton(s)}</div></article>`;
 }
 
-/** "See the code / make your own": the skill's GitHub repository in VS Code
- * for the Web, which offers to fork it on the first save – how newcomers learn
- * from real skills (emkay-voice/store#2). Only for skills whose source is on GitHub. */
-function codeLink(s) {
+/** The Emkay DEV box: folded away, for those who want to look at or change
+ * the skill – View on GitHub, and Edit in your own copy (fork), which opens the
+ * repository in VS Code for the Web; it offers to fork on the first save – how
+ * newcomers learn from real skills (emkay-voice/store#2). Only for skills whose
+ * source is on GitHub, and hidden on small screens (store.css): editing code
+ * makes no sense on a phone. */
+function devBox(s) {
   const m = (s.source || "").match(/^https:\/\/github\.com\/([\w.-]+)\/([\w.-]+?)(?:\.git)?\/?$/);
   if (!m) return "";
-  return `<p><a class="code-btn" href="https://vscode.dev/github/${esc(m[1])}/${esc(m[2])}" target="_blank" rel="noopener">${esc(t("code.own"))}</a></p>
-    <p class="hint">${esc(t("code.own.hint"))}</p>`;
+  const repo = `${esc(m[1])}/${esc(m[2])}`;
+  return `<details class="dev"><summary>${esc(t("dev.title"))}</summary>
+    <p><a class="code-btn" href="https://github.com/${repo}" target="_blank" rel="noopener">${esc(t("code.github"))}</a>
+      <a class="code-btn" href="https://vscode.dev/github/${repo}" target="_blank" rel="noopener">${esc(t("code.own"))}</a></p>
+    <p class="hint">${esc(t("code.own.hint"))}</p>
+    <p class="hint"><a href="https://dev.emkay.ai/" target="_blank" rel="noopener">${esc(t("dev.more"))}</a></p></details>`;
 }
 
 // ------------------------------------------------------------ pages
@@ -287,7 +294,7 @@ function openDetail(s) {
     ${langs ? `<h4>${esc(t("languages"))}</h4><p class="meta">${esc(langs)}</p>` : ""}
     <p class="meta">${esc(s.package)} ${esc(s.version || "")}${s.license ? ` · ${esc(s.license)}` : ""}${s.updated ? ` · ${esc(s.updated)}` : ""}
       ${s.source ? ` · <a href="${esc(s.source)}" target="_blank" rel="noopener">${esc(t("source"))}</a>` : ""}</p>
-    ${codeLink(s)}
+    ${devBox(s)}
     ${s.status !== "builtin" ? `<p class="hint">${esc(t("install.hint"))}</p>` : ""}`;
   $("detail").showModal();
   const url = new URL(location);
