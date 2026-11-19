@@ -239,6 +239,14 @@ function devBox(s) {
     <p class="hint"><a href="https://dev.emkay.ai/" target="_blank" rel="noopener">${esc(t("dev.more"))}</a></p></details>`;
 }
 
+/** Get on a skill's page: one big button at the end, after you have read what
+ * the skill does, with the line saying what it does right under it. */
+function detailGet(s) {
+  if (s.status === "builtin") return `<div class="dget"><span class="pill done">${esc(t("included"))}</span></div>`;
+  return `<div class="dget"><a class="btn primary" href="${APP}?install=${encodeURIComponent(s.package)}" data-get>${esc(t("get"))}</a>
+    <p class="hint">${esc(t("install.hint"))}</p></div>`;
+}
+
 // ------------------------------------------------------------ pages
 function render() {
   const list = visible();
@@ -285,8 +293,7 @@ function openDetail(s) {
   }).join(", ");
   $("detail-body").innerHTML = `
     <div class="dhead">${icon(s, true)}
-      <div><h2>${esc(tx.name)}</h2><div class="by">${esc(s.author || "")} · ${esc(t(`category.${s.category}`))}</div>
-        <div class="dget">${getButton(s)}</div></div></div>
+      <div><h2>${esc(tx.name)}</h2><div class="by">${esc(s.author || "")} · ${esc(t(`category.${s.category}`))}</div></div></div>
     <div class="tags">${tags(s)}${s.official ? `<span class="tag">${esc(t("official"))}</span>` : ""}</div>
     <p class="desc">${esc(tx.description)}</p>
     ${s.note ? `<p class="note">${esc(t(s.note))}</p>` : ""}
@@ -294,8 +301,8 @@ function openDetail(s) {
     ${langs ? `<h4>${esc(t("languages"))}</h4><p class="meta">${esc(langs)}</p>` : ""}
     <p class="meta">${esc(s.package)} ${esc(s.version || "")}${s.license ? ` · ${esc(s.license)}` : ""}${s.updated ? ` · ${esc(s.updated)}` : ""}
       ${s.source ? ` · <a href="${esc(s.source)}" target="_blank" rel="noopener">${esc(t("source"))}</a>` : ""}</p>
-    ${devBox(s)}
-    ${s.status !== "builtin" ? `<p class="hint">${esc(t("install.hint"))}</p>` : ""}`;
+    ${detailGet(s)}
+    ${devBox(s)}`;
   $("detail").showModal();
   const url = new URL(location);
   url.searchParams.set("skill", s.package);
