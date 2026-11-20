@@ -453,5 +453,73 @@
   "kind": "skill",
   "version": "0.0.2",
   "tested": "2026-11-19"
+ },
+ "ovos-tts-plugin-beepspeak": {
+  "status": "works",
+  "reason": "not in the store's package index (it was broken before)",
+  "note": "2.1 s of speech in 0.7 s",
+  "panel": false,
+  "kind": "tts",
+  "version": "0.1.1a1",
+  "tested": "2026-11-20"
+ },
+ "ovos-tts-plugin-espeakng": {
+  "status": "works",
+  "reason": "the settings panel failed: ",
+  "note": "2.1 s of speech in 0.7 s",
+  "panel": false,
+  "kind": "tts",
+  "version": "0.0.2",
+  "tested": "2026-11-20"
+ },
+ "ovos-gguf-plugin": {
+  "status": "broken",
+  "reason": "does not install: ERROR: llama-cpp-python has no pure-Python wheel (only source or compiled builds), so it cannot be installed in the browser; the settings panel does not install this kind of plugin yet",
+  "panel": false,
+  "kind": "translate",
+  "version": "1.2.8a1",
+  "tested": "2026-11-20"
+ },
+ "ovos-lang-detector-fasttext-plugin": {
+  "status": "broken",
+  "reason": "does not install: ERROR: fasttext has no pure-Python wheel (only source or compiled builds), so it cannot be installed in the browser; the settings panel failed: HTTP 0: the request failed: Failed to fetch",
+  "panel": false,
+  "kind": "lang_detect",
+  "version": "0.1.2",
+  "tested": "2026-11-20"
+ },
+ "ovos-media-provider-tunein": {
+  "status": "untested",
+  "reason": "found nothing for news, jazz, radio or music (may need to be set up)",
+  "panel": true,
+  "kind": "media_provider",
+  "version": "0.0.1a4",
+  "tested": "2026-11-20"
+ },
+ "ovos-skill-pokepedia": {
+  "status": "works",
+  "reason": "",
+  "note": "loads without errors; it has no examples of its own",
+  "panel": true,
+  "kind": "skill",
+  "version": "0.1.4",
+  "tested": "2026-11-20"
+ },
+ "ovos-skill-wordnet": {
+  "status": "works",
+  "reason": "",
+  "note": "loads without errors; it has no examples of its own",
+  "panel": true,
+  "kind": "skill",
+  "version": "0.2.6",
+  "tested": "2026-11-20"
+ },
+ "ovos-solver-bm25-plugin": {
+  "status": "broken",
+  "reason": "does not work here: it reads github.com, which does not let a browser read it (CORS)",
+  "panel": true,
+  "kind": "solver",
+  "version": "0.1.0",
+  "tested": "2026-11-20"
  }
 }
