@@ -521,5 +521,70 @@
   "kind": "solver",
   "version": "0.1.0",
   "tested": "2026-11-20"
+ },
+ "ovos-stt-plugin-citrinet": {
+  "status": "broken",
+  "reason": "does not install: ERROR: torch>=1.13.1 has no pure-Python wheel (only source or compiled builds), so it cannot be installed in the browser",
+  "panel": true,
+  "kind": "stt",
+  "version": "0.1.0",
+  "tested": "2026-11-21"
+ },
+ "ovos-stt-plugin-nemo": {
+  "status": "broken",
+  "reason": "does not install: ERROR: msgspec>=0.18.5 has no pure-Python wheel (only source or compiled builds), so it cannot be installed in the browser",
+  "panel": true,
+  "kind": "stt",
+  "version": "0.2.5",
+  "tested": "2026-11-21"
+ },
+ "ovos-stt-plugin-pocketsphinx": {
+  "status": "broken",
+  "reason": "does not install: ERROR: ovos-stt-plugin-pocketsphinx==0.1.1 has no pure-Python wheel (only source or compiled builds), so it cannot be installed in the browser",
+  "panel": true,
+  "kind": "stt",
+  "version": "0.1.1",
+  "tested": "2026-11-21"
+ },
+ "ovos_stt_plugin_wav2vec": {
+  "status": "broken",
+  "reason": "does not install: ERROR: safetensors>=0.8.0 has no pure-Python wheel (only source or compiled builds), so it cannot be installed in the browser",
+  "panel": true,
+  "kind": "stt",
+  "version": "0.3.0",
+  "tested": "2026-11-21"
+ },
+ "ovos-stt-plugin-whisper-lm": {
+  "status": "broken",
+  "reason": "does not install: ERROR: safetensors>=0.8.0 has no pure-Python wheel (only source or compiled builds), so it cannot be installed in the browser",
+  "panel": true,
+  "kind": "stt",
+  "version": "0.0.5",
+  "tested": "2026-11-21"
+ },
+ "ovos-tts-plugin-ahotts": {
+  "status": "works",
+  "reason": "",
+  "note": "2.0 s of speech in 1.2 s",
+  "panel": true,
+  "kind": "tts",
+  "version": "0.1.1",
+  "tested": "2026-11-21"
+ },
+ "ovos-tts-plugin-audio8": {
+  "status": "broken",
+  "reason": "does not install: ERROR: scipy>=1.10 has no pure-Python wheel (only source or compiled builds), so it cannot be installed in the browser",
+  "panel": true,
+  "kind": "tts",
+  "version": "0.2.0",
+  "tested": "2026-11-21"
+ },
+ "ovos-skill-rhythm-box": {
+  "status": "works",
+  "reason": "the settings panel failed: HTTP 0: the request failed: Failed to fetch",
+  "panel": false,
+  "kind": "skill",
+  "version": "0.0.4",
+  "tested": "2026-11-21"
  }
 }

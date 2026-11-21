@@ -4,7 +4,12 @@
   "nested-lookup<1.0,>=0.2",
   "ctranslate2",
   "llama-cpp-python",
-  "fasttext"
+  "fasttext",
+  "torch>=1.13.1",
+  "msgspec>=0.18.5",
+  "ovos-stt-plugin-pocketsphinx==0.1.1",
+  "safetensors>=0.8.0",
+  "scipy>=1.10"
  ],
  "not_pure": {}
 }
