@@ -586,5 +586,70 @@
   "kind": "skill",
   "version": "0.0.4",
   "tested": "2026-11-21"
+ },
+ "skill-mac-application-launcher": {
+  "status": "broken",
+  "reason": "does not install: ERROR: No matching distribution found for ovos-plugin-manager~=0.9.0; not in the store's package index (it was broken before)",
+  "panel": false,
+  "kind": "skill",
+  "version": "1.0.6",
+  "tested": "2026-11-22"
+ },
+ "skill-meal-plan": {
+  "status": "broken",
+  "reason": "does not install: ERROR: No matching distribution found for ovos-workshop>=0.0.12,~=0.0; not in the store's package index (it was broken before)",
+  "panel": false,
+  "kind": "skill",
+  "version": "2.2.4",
+  "tested": "2026-11-22"
+ },
+ "skill-musicassistant": {
+  "status": "broken",
+  "reason": "loads, but it reads localhost:8095, which does not let a browser read it (CORS); not in the store's package index (it was broken before)",
+  "panel": false,
+  "kind": "skill",
+  "version": "1.0.3",
+  "tested": "2026-11-22"
+ },
+ "ovos-skill-sound-like": {
+  "status": "works",
+  "reason": "",
+  "panel": true,
+  "kind": "skill",
+  "version": "0.0.3",
+  "tested": "2026-11-22"
+ },
+ "ovos-skill-days-in-history": {
+  "status": "broken",
+  "reason": "does not install: ERROR: wikipedia>=1.4.0 has no pure-Python wheel (only source or compiled builds), so it cannot be installed in the browser",
+  "panel": true,
+  "kind": "skill",
+  "version": "0.3.11",
+  "tested": "2026-11-22"
+ },
+ "tts-plugin-mozilla_remote": {
+  "status": "works",
+  "reason": "the settings panel does not install this kind of plugin yet",
+  "note": "2.4 s of speech in 0.7 s",
+  "panel": false,
+  "kind": "tts",
+  "version": "3.1.2",
+  "tested": "2026-11-22"
+ },
+ "ovos-skill-tuning-fork": {
+  "status": "works",
+  "reason": "",
+  "panel": true,
+  "kind": "skill",
+  "version": "0.0.4",
+  "tested": "2026-11-22"
+ },
+ "ovos-skill-voices-of-tomorrow": {
+  "status": "broken",
+  "reason": "loads, but it reads 365tomorrows.com, which does not let a browser read it (CORS)",
+  "panel": true,
+  "kind": "skill",
+  "version": "0.1.2",
+  "tested": "2026-11-22"
  }
 }
