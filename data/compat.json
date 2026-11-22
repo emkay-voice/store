@@ -12,14 +12,6 @@
   "status": "broken",
   "reason": "waits for an audio service and a listener that a browser does not have"
  },
- "ovos-skill-andersen-tales": {
-  "status": "broken",
-  "reason": "its source site does not allow a browser to read it (CORS)"
- },
- "ovos-skill-grimm-tales": {
-  "status": "broken",
-  "reason": "its source site does not allow a browser to read it (CORS)"
- },
  "ovos-skill-laugh": {
   "status": "works",
   "reason": "",
