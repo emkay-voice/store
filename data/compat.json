@@ -643,5 +643,71 @@
   "kind": "skill",
   "version": "0.1.2",
   "tested": "2026-11-22"
+ },
+ "ovos-skill-dictation": {
+  "status": "broken",
+  "reason": "installs, but does not load: no skill appeared",
+  "panel": true,
+  "kind": "skill",
+  "version": "0.2.21",
+  "tested": "2026-11-23"
+ },
+ "ovos_openai_plugin": {
+  "status": "broken",
+  "reason": "does not work here: requests.exceptions.RequestException: HTTP error: 401 Client Error: for url: https://api.openai.com/v1/chat/completions; the settings panel does not install this kind of plugin yet",
+  "panel": false,
+  "kind": "lang_detect",
+  "version": "2.0.6",
+  "tested": "2026-11-23"
+ },
+ "ovos-persona": {
+  "status": "works",
+  "reason": "the settings panel does not install this kind of plugin yet",
+  "note": "placed as ovos-persona-pipeline-plugin-high, ovos-persona-pipeline-plugin-medium, ovos-persona-pipeline-plugin-low; Emkay still answers; it has no examples of its own",
+  "panel": false,
+  "kind": "pipeline",
+  "version": "0.7.1",
+  "tested": "2026-11-23"
+ },
+ "ovos-skill-hello-world": {
+  "status": "works",
+  "reason": "",
+  "note": "loads without errors; it has no examples of its own",
+  "panel": true,
+  "kind": "skill",
+  "version": "0.2.1",
+  "tested": "2026-11-23"
+ },
+ "ovos-skill-ddg": {
+  "status": "broken",
+  "reason": "installs, but does not load: no skill appeared",
+  "panel": true,
+  "kind": "skill",
+  "version": "0.3.7",
+  "tested": "2026-11-23"
+ },
+ "ovos-skill-personal": {
+  "status": "broken",
+  "reason": "installs, but does not load: no skill appeared",
+  "panel": true,
+  "kind": "skill",
+  "version": "0.1.19",
+  "tested": "2026-11-23"
+ },
+ "ovos-skill-audio-recording": {
+  "status": "broken",
+  "reason": "installs, but does not load: no skill appeared",
+  "panel": true,
+  "kind": "skill",
+  "version": "0.2.7",
+  "tested": "2026-11-23"
+ },
+ "ovos-skill-horoscope-readings": {
+  "status": "works",
+  "reason": "",
+  "panel": true,
+  "kind": "skill",
+  "version": "0.1.5",
+  "tested": "2026-11-23"
  }
 }
