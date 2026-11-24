@@ -709,5 +709,69 @@
   "kind": "skill",
   "version": "0.1.5",
   "tested": "2026-11-23"
+ },
+ "ovos-translate-server-plugin": {
+  "status": "broken",
+  "reason": "does not work here: RuntimeError: All OVOS Translate servers are down!; the settings panel does not install this kind of plugin yet",
+  "panel": false,
+  "kind": "lang_detect",
+  "version": "0.0.5",
+  "tested": "2026-11-24"
+ },
+ "ovos-skill-speedtest": {
+  "status": "broken",
+  "reason": "installs, but does not load: no skill appeared",
+  "panel": true,
+  "kind": "skill",
+  "version": "0.3.6",
+  "tested": "2026-11-24"
+ },
+ "ovos-skill-wolfie": {
+  "status": "broken",
+  "reason": "installs, but does not load: no skill appeared",
+  "panel": true,
+  "kind": "skill",
+  "version": "0.5.8",
+  "tested": "2026-11-24"
+ },
+ "ovos-skill-white-noise": {
+  "status": "works",
+  "reason": "",
+  "panel": true,
+  "kind": "skill",
+  "version": "0.0.3",
+  "tested": "2026-11-24"
+ },
+ "ovos-skill-wiki-offline": {
+  "status": "works",
+  "reason": "",
+  "panel": true,
+  "kind": "skill",
+  "version": "0.2.0",
+  "tested": "2026-11-24"
+ },
+ "ovos-skill-word-of-the-day": {
+  "status": "works",
+  "reason": "",
+  "panel": true,
+  "kind": "skill",
+  "version": "0.2.5",
+  "tested": "2026-11-24"
+ },
+ "ovos-skill-color-picker": {
+  "status": "works",
+  "reason": "",
+  "panel": true,
+  "kind": "skill",
+  "version": "0.0.7",
+  "tested": "2026-11-24"
+ },
+ "ovos-skill-ip": {
+  "status": "broken",
+  "reason": "installs, but does not load: no skill appeared",
+  "panel": true,
+  "kind": "skill",
+  "version": "0.2.8",
+  "tested": "2026-11-24"
  }
 }
