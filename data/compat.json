@@ -773,5 +773,70 @@
   "kind": "skill",
   "version": "0.2.8",
   "tested": "2026-11-24"
+ },
+ "thalovant-skill-interaction-modes": {
+  "status": "works",
+  "reason": "the settings panel does not install this kind of plugin yet",
+  "panel": false,
+  "kind": "skill",
+  "version": "0.1.12",
+  "tested": "2026-11-25"
+ },
+ "ovos-skill-fuster-quotes": {
+  "status": "works",
+  "reason": "",
+  "panel": true,
+  "kind": "skill",
+  "version": "0.0.4",
+  "tested": "2026-11-25"
+ },
+ "ovos-skill-music-teacher": {
+  "status": "works",
+  "reason": "",
+  "panel": true,
+  "kind": "skill",
+  "version": "0.1.0a1",
+  "tested": "2026-11-25"
+ },
+ "neon-skill-core_ready": {
+  "status": "broken",
+  "reason": "does not install: ERROR: No matching distribution found for ovos-workshop>=0.0.12,~=0.0; the settings panel does not install this kind of plugin yet",
+  "panel": false,
+  "kind": "skill",
+  "version": "0.3.0",
+  "tested": "2026-11-25"
+ },
+ "ovos-skill-opds-books": {
+  "status": "broken",
+  "reason": "loads, but it reads standardebooks.org, which does not let a browser read it (CORS)",
+  "panel": true,
+  "kind": "skill",
+  "version": "0.1.0a3",
+  "tested": "2026-11-25"
+ },
+ "ovos-flashrank-reranker-plugin": {
+  "status": "broken",
+  "reason": "installs, but registers no solver plugin; the settings panel does not install this kind of plugin yet",
+  "panel": false,
+  "kind": "solver",
+  "version": "0.0.0",
+  "tested": "2026-11-25"
+ },
+ "ovos-google-translate-plugin": {
+  "status": "works",
+  "reason": "",
+  "note": "en -> en, da -> da",
+  "panel": true,
+  "kind": "lang_detect",
+  "version": "0.0.4a3",
+  "tested": "2026-11-25"
+ },
+ "ovos_hierarchical_knn_pipeline": {
+  "status": "broken",
+  "reason": "does not install: ERROR: faiss-cpu has no pure-Python wheel (only source or compiled builds), so it cannot be installed in the browser; the settings panel does not install this kind of plugin yet",
+  "panel": false,
+  "kind": "pipeline",
+  "version": "0.0.1",
+  "tested": "2026-11-25"
  }
 }
