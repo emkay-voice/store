@@ -838,5 +838,69 @@
   "kind": "pipeline",
   "version": "0.0.1",
   "tested": "2026-11-25"
+ },
+ "ovos-hivemind-pipeline-plugin": {
+  "status": "broken",
+  "reason": "does not install: ERROR: pycryptodomex>=3.19.1 has no pure-Python wheel (only source or compiled builds), so it cannot be installed in the browser",
+  "panel": true,
+  "kind": "pipeline",
+  "version": "0.0.3",
+  "tested": "2026-11-26"
+ },
+ "ovos-lang-detector-classics-plugin": {
+  "status": "broken",
+  "reason": "does not work here: ValueError: Failed to load module: ovos-lang-detector-plugin-fastlang",
+  "panel": true,
+  "kind": "lang_detect",
+  "version": "0.0.2a4",
+  "tested": "2026-11-26"
+ },
+ "ovos-markov-pipeline-plugin": {
+  "status": "broken",
+  "reason": "does not install: ERROR: onnx has no pure-Python wheel (only source or compiled builds), so it cannot be installed in the browser",
+  "panel": true,
+  "kind": "pipeline",
+  "version": "0.5.2a2",
+  "tested": "2026-11-26"
+ },
+ "ovos-media-provider-bandcamp": {
+  "status": "untested",
+  "reason": "found nothing for news, jazz, radio or music (may need to be set up)",
+  "panel": true,
+  "kind": "media_provider",
+  "version": "0.0.1a4",
+  "tested": "2026-11-26"
+ },
+ "ovos-media-provider-mass": {
+  "status": "broken",
+  "reason": "does not install: ERROR: orjson>=3.9 has no pure-Python wheel (only source or compiled builds), so it cannot be installed in the browser",
+  "panel": true,
+  "kind": "media_provider",
+  "version": "0.0.1a6",
+  "tested": "2026-11-26"
+ },
+ "ovos-media-provider-soundcloud": {
+  "status": "untested",
+  "reason": "found nothing for news, jazz, radio or music (may need to be set up)",
+  "panel": true,
+  "kind": "media_provider",
+  "version": "0.0.1a4",
+  "tested": "2026-11-26"
+ },
+ "ovos-media-provider-spotify": {
+  "status": "untested",
+  "reason": "found nothing for news, jazz, radio or music (may need to be set up)",
+  "panel": true,
+  "kind": "media_provider",
+  "version": "0.0.1a6",
+  "tested": "2026-11-26"
+ },
+ "ovos-media-provider-youtube": {
+  "status": "untested",
+  "reason": "found nothing for news, jazz, radio or music (may need to be set up)",
+  "panel": true,
+  "kind": "media_provider",
+  "version": "0.0.1a4",
+  "tested": "2026-11-26"
  }
 }
