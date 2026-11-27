@@ -14,7 +14,9 @@
   "faiss-cpu",
   "pycryptodomex>=3.19.1",
   "onnx",
-  "orjson>=3.9"
+  "orjson>=3.9",
+  "sentencepiece>=0.2.0",
+  "sherpa_onnx"
  ],
  "not_pure": {}
 }

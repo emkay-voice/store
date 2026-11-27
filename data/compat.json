@@ -902,5 +902,73 @@
   "kind": "media_provider",
   "version": "0.0.1a4",
   "tested": "2026-11-26"
+ },
+ "ovos-plugin-linguonnx": {
+  "status": "broken",
+  "reason": "does not install: ERROR: sentencepiece>=0.2.0 has no pure-Python wheel (only source or compiled builds), so it cannot be installed in the browser; the settings panel does not install this kind of plugin yet",
+  "panel": false,
+  "kind": "translate",
+  "version": "0.3.3a1",
+  "tested": "2026-11-27"
+ },
+ "ovos-skill-ggwave": {
+  "status": "broken",
+  "reason": "does not install: ERROR: No matching distribution found for ovos-workshop<4.0.0,>=0.0.15",
+  "panel": true,
+  "kind": "skill",
+  "version": "0.3.4",
+  "tested": "2026-11-27"
+ },
+ "ovos-solver-hivemind-plugin": {
+  "status": "broken",
+  "reason": "does not install: ERROR: pycryptodomex>=3.19.1 has no pure-Python wheel (only source or compiled builds), so it cannot be installed in the browser",
+  "panel": true,
+  "kind": "solver",
+  "version": "0.0.3",
+  "tested": "2026-11-27"
+ },
+ "ovos_stt_plugin_azure": {
+  "status": "works",
+  "reason": "",
+  "note": "heard \"What time is it?\"",
+  "panel": true,
+  "kind": "stt",
+  "version": "0.0.0a4",
+  "tested": "2026-11-27"
+ },
+ "ovos-stt-plugin-rover": {
+  "status": "works",
+  "reason": "",
+  "note": "heard \"What time is it?\"",
+  "panel": true,
+  "kind": "stt",
+  "version": "0.0.1",
+  "tested": "2026-11-27"
+ },
+ "ovos-stt-plugin-sherpa-onnx": {
+  "status": "broken",
+  "reason": "does not install: ERROR: sherpa_onnx has no pure-Python wheel (only source or compiled builds), so it cannot be installed in the browser",
+  "panel": true,
+  "kind": "stt",
+  "version": "0.0.1",
+  "tested": "2026-11-27"
+ },
+ "ovos_tts_plugin_azure": {
+  "status": "works",
+  "reason": "",
+  "note": "2.6 s of speech in 0.6 s",
+  "panel": true,
+  "kind": "tts",
+  "version": "0.1.2a2",
+  "tested": "2026-11-27"
+ },
+ "ovos-tts-plugin-google-tx": {
+  "status": "works",
+  "reason": "",
+  "note": "2.6 s of speech in 0.6 s",
+  "panel": true,
+  "kind": "tts",
+  "version": "1.0.3",
+  "tested": "2026-11-27"
  }
 }
