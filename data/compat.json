@@ -970,5 +970,73 @@
   "kind": "tts",
   "version": "1.0.3",
   "tested": "2026-11-27"
+ },
+ "ovos-tts-plugin-mimic": {
+  "status": "works",
+  "reason": "",
+  "note": "2.8 s of speech in 1.2 s",
+  "panel": true,
+  "kind": "tts",
+  "version": "0.3.0",
+  "tested": "2026-11-28"
+ },
+ "ovos-tts-plugin-pico": {
+  "status": "works",
+  "reason": "",
+  "note": "2.5 s of speech in 1.0 s",
+  "panel": true,
+  "kind": "tts",
+  "version": "0.0.3.post1",
+  "tested": "2026-11-28"
+ },
+ "ovos-tts-plugin-polly": {
+  "status": "works",
+  "reason": "",
+  "note": "2.6 s of speech in 2.1 s",
+  "panel": true,
+  "kind": "tts",
+  "version": "0.2.1",
+  "tested": "2026-11-28"
+ },
+ "ovos-tts-plugin-SAM": {
+  "status": "works",
+  "reason": "",
+  "note": "2.6 s of speech in 1.2 s",
+  "panel": true,
+  "kind": "tts",
+  "version": "0.0.1",
+  "tested": "2026-11-28"
+ },
+ "ovos-tts-transformer-sox-plugin": {
+  "status": "broken",
+  "reason": "installs, but registers no tts plugin; the settings panel does not install this kind of plugin yet",
+  "panel": false,
+  "kind": "tts",
+  "version": "0.0.0a4",
+  "tested": "2026-11-28"
+ },
+ "ovos-skill-recipe-helper": {
+  "status": "works",
+  "reason": "",
+  "panel": true,
+  "kind": "skill",
+  "version": "0.1.1",
+  "tested": "2026-11-28"
+ },
+ "ovos-skill-screenshot": {
+  "status": "works",
+  "reason": "",
+  "panel": true,
+  "kind": "skill",
+  "version": "0.0.7",
+  "tested": "2026-11-28"
+ },
+ "ovos-skill-filebrowser": {
+  "status": "broken",
+  "reason": "does not install: ERROR: No matching distribution found for ovos-workshop>=0.0.12a20,~=0.0",
+  "panel": true,
+  "kind": "skill",
+  "version": "0.0.2",
+  "tested": "2026-11-28"
  }
 }
