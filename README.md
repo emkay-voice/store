@@ -1,4 +1,4 @@
-# Emkay skills — store.emkay.ai
+# <img src='site/icon.svg' width='50' height='50' style='vertical-align:bottom'/> Emkay skills — store.emkay.ai
 
 The skill store for [Emkay](https://app.emkay.ai), OpenVoiceOS in the browser:
 OVOS skills you can add to Emkay, by category, in your language, with what
@@ -22,6 +22,9 @@ to say to them.
   Emkay; on its own it opens `app.emkay.ai/?install=<package>`, which hands it
   to an Emkay already open in that browser. Emkay opens its control panel at
   that package, and the panel's own Install button does the rest (it asks first).
+- **Emkay Dev:** every skill on GitHub has *Open in Emkay Code* (VS Code for
+  the Web) and *View on GitHub*, and a skill – not a plugin – *Open in Emkay
+  Blocks* too, which opens it as blocks; folded away, and not on a phone.
 
 **How it all works, and how to make a store like this for your own device:
 [docs/how-it-works.md](docs/how-it-works.md).**
