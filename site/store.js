@@ -226,16 +226,19 @@ function hero(f) {
  * the skill – Open in Emkay Blocks (the skill as blocks, emkay-voice/blocks#8),
  * Open in Emkay Code (the repository in VS Code for the Web, which offers to
  * fork on the first save), and View on GitHub – how newcomers learn from real
- * skills (emkay-voice/store#2, emkay-voice/dev#4). Only for skills whose
+ * skills (emkay-voice/store#2, emkay-voice/dev#4). Blocks only for skills, not
+ * plugins. Only for skills whose
  * source is on GitHub, and hidden on small screens (store.css): editing code
  * makes no sense on a phone. */
 function devBox(s) {
   const m = (s.source || "").match(/^https:\/\/github\.com\/([\w.-]+)\/([\w.-]+?)(?:\.git)?\/?$/);
   if (!m) return "";
   const repo = `${esc(m[1])}/${esc(m[2])}`;
-  return `<details class="dev"><summary>${esc(t("dev.title"))}</summary>
+  // Blocks makes skills: a plugin (pipeline, voice, media provider …) is Emkay Code's
+  const blocks = (s.kind || "skill") === "skill" ? `
     <p><a class="code-btn" href="https://blocks.emkay.ai/?open=${repo}&amp;lang=${encodeURIComponent(lang)}" target="_blank" rel="noopener">${esc(t("code.blocks"))}</a></p>
-    <p class="hint">${esc(t("code.blocks.hint"))}</p>
+    <p class="hint">${esc(t("code.blocks.hint"))}</p>` : "";
+  return `<details class="dev"><summary>${esc(t("dev.title"))}</summary>${blocks}
     <p><a class="code-btn" href="https://vscode.dev/github/${repo}" target="_blank" rel="noopener">${esc(t("code.own"))}</a>
       <a class="code-btn" href="https://github.com/${repo}" target="_blank" rel="noopener">${esc(t("code.github"))}</a></p>
     <p class="hint">${esc(t("code.own.hint"))}</p>
